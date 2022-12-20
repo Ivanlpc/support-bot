@@ -1,0 +1,23 @@
+# _______   _                                                  _     _           _   
+#|__   __| | |                                                | |   | |         | |  
+#   | | ___| |__   _____  __  ___ _   _ _ __  _ __   ___  _ __| |_  | |__   ___ | |_ 
+#   | |/ _ \ '_ \ / _ \ \/ / / __| | | | '_ \| '_ \ / _ \| '__| __| | '_ \ / _ \| __|
+#   | |  __/ |_) |  __/>  <  \__ \ |_| | |_) | |_) | (_) | |  | |_  | |_) | (_) | |_ 
+#   |_|\___|_.__/ \___/_/\_\ |___/\__,_| .__/| .__/ \___/|_|   \__| |_.__/ \___/ \__|
+#                                      | |   | |                                     
+#                                      |_|   |_|                                
+
+TOKEN: "" 
+GUILD_ID: "" #ID of the discord server
+TEBEX_SECRET: ""
+
+Locale: []
+
+Commands:
+  search_transaction:
+    enabled: true
+    command_name: "search" #Start with lowercase e.g 'search'
+    command_description: "Search specific transaction" #Limit of 4000 characters
+    command_requirement: "user"
+    command_requirement_description: "Nick of the user" #Limit of 4000 characters
+    
