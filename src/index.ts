@@ -3,13 +3,10 @@ import fs from 'fs';
 import YAML from 'yaml';
 import Bot from "./structures/Bot";
 import { unhandledRejection, uncaughtException } from './Resources/Proccess';
-import TebexAPI from './Resources/TebexAPI';
 
 
 const configDir = __dirname + "/config.yml";
 export const config = YAML.parse(fs.readFileSync(configDir, 'utf-8'));
-const t = new TebexAPI().getPaymentsFromUser('xImIvanLC');
-
 const TOKEN: string = config.TOKEN;
 const eventsPath: string = path.join(__dirname, 'events');
 const eventsFile: string[] = fs.readdirSync(eventsPath)
