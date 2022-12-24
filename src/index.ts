@@ -2,11 +2,11 @@ import path from 'path';
 import fs from 'fs';
 import YAML from 'yaml';
 import Bot from "./structures/Bot";
-import { unhandledRejection, uncaughtException } from './Resources/Proccess';
-
+import { unhandledRejection, uncaughtException } from './API/Proccess';
 
 const configDir = __dirname + "/config.yml";
 export const config = YAML.parse(fs.readFileSync(configDir, 'utf-8'));
+
 const TOKEN: string = config.TOKEN;
 const eventsPath: string = path.join(__dirname, 'events');
 const eventsFile: string[] = fs.readdirSync(eventsPath)
@@ -24,8 +24,14 @@ for (const file of eventsFile) {
 	client.on(event.getName(), event.execute);
 	console.log("\u001b[32m", `[✔] Loaded ${event.getName()} Event`, "\u001b[0m")
 }
-
-
+import { getPaymentsFromUser } from './API/TebexAPI';
+import { getTokenByGuild } from './API/Repositories/GuildRespository';
+// async function x33d() : Promise<void> {
+// 	const {token, type} = await getTokenByGuild('833078161112825916');
+// 	const res = await getPaymentsFromUser(token, 'ximivanlc')
+// 	console.log(res)
+// }
+// x33d();
 //Import commands
 if (commandsFile.length > 0) {
 	for (const file of commandsFile) {

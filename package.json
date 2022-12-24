@@ -1,16 +1,18 @@
 {
   "name": "support-bot",
   "version": "1.0.0",
-  "description": "Discord typescript support bot for tebex",
-  "main": "./prod/index.js",
+  "description": "Discord typescript support bot for tebex and craftingstore",
+  "main": "./build/index.js",
   "scripts": {
-    "build": "rimraf ./prod && tsc",
+    "build": "rimraf ./build && tsc",
     "start": "npx nodemon"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "crypto": "^1.0.1",
     "discord.js": "^14.7.1",
+    "mysql2": "^2.3.3",
     "yaml": "^2.1.3"
   },
   "devDependencies": {

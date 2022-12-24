@@ -3,6 +3,7 @@ import { Routes } from 'discord-api-types/v10';
 import { config } from '..';
 import Event from '../structures/Event';
 import Bot from '../structures/Bot';
+import DB from '../API/Database';
 
 const event = new Event('ready', async (client): Promise<void> => {
 
@@ -12,11 +13,10 @@ const event = new Event('ready', async (client): Promise<void> => {
                 version: '10'
             }).setToken(config.TOKEN);
             const CLIENT_ID = client.user?.id
-            const GUILD_ID = config.GUILD_ID;
             if (CLIENT_ID) {
                 try {
                     await rest.put(
-                        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+                        Routes.applicationCommands(CLIENT_ID), {
                         body: client.getRestCommands()
                         }
                     );

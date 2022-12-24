@@ -2,7 +2,6 @@ import Event from '../structures/Event';
 import { client, config } from "..";
 import { BaseInteraction } from 'discord.js';
 
-
 const event = new Event('interactionCreate', async (interaction : BaseInteraction): Promise<void> => {
 
     if (interaction.isChatInputCommand()) {
@@ -11,13 +10,13 @@ const event = new Event('interactionCreate', async (interaction : BaseInteractio
         try {
             await command.execute(client, interaction)
         } catch (e) {
+            console.log(e)
             interaction.reply({
-                content: config.lang.error.command_error,
+                content: config.Locale.command_error,
                 ephemeral: true
             })
             
         }
     }
-
 })
 export { event }
