@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import Command from '../structures/Command';
+import Command from '../../structures/Command';
 import {
 	Client,
 	ChatInputCommandInteraction,
@@ -10,12 +10,11 @@ import {
 	TextInputBuilder,
 	TextInputStyle,
 	ActionRowBuilder,
-	ButtonBuilder,
-	GuildMemberRoleManager
+	ButtonBuilder
 } from 'discord.js';
-import { config } from '..';
-import { accepting_terms_embed, select_store_embed } from '../API/Embeds';
-import { newGuild, updateToken } from '../API/Repositories/GuildRespository';
+import { config } from '../..';
+import { Embeds } from '../../API/Util/Embeds';
+import { newGuild, updateToken } from '../../API/Services/Guilds';
 
 const data = new SlashCommandBuilder()
 	.setName(config.Commands.setup.command_name)
@@ -69,12 +68,15 @@ modal.addComponents(new ActionRowBuilder<ModalActionRowComponentBuilder>().addCo
 async function execute(client: Client, interaction: ChatInputCommandInteraction) {
 	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId) {
 		//if(interaction.guild?.ownerId !== interaction.user.id) return interaction.reply({content: config.Locale.server_owner, ephemeral: true})
-		await interaction.reply({ embeds: [accepting_terms_embed()], components: [buttons] })
+		await interaction.reply({ embeds: [Embeds.accepting_terms_embed()], components: [buttons] })
 		
 		const filter = (d: any) => {
 			if (d.user.id) {
 				if (d.user.id === interaction.user.id) return true;
 			}
+			try{
+				d.reply({content: config.Locale.different_user, ephemeral: true})
+			}catch(err){}
 			return false;
 		}
 
@@ -90,8 +92,8 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				}).then(async res => {
 					let token = res.fields.getTextInputValue('inputSecret');
 					await newGuild(interaction.guildId, interaction.guild?.name);
-					const query: any = await updateToken(interaction.guildId, token, interact.values[0]);
-					if (query.affectedRows > 0) {
+					const query2: any = await updateToken(interaction.guildId, token, interact.values[0]);
+					if (query2) {
 						res.reply({ content: `Setup done! This server will now use ${interact.values[0]} with token ${token}`, ephemeral: true });
 					} else {
 						res.reply({content: 'There was an error while trying to update your server data', ephemeral: true})
@@ -106,7 +108,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 					collector.stop();
 				} else {
 					await interact.deferUpdate();
-					await interaction.editReply({ embeds: [select_store_embed()], components: [row] });
+					await interaction.editReply({ embeds: [Embeds.select_store_embed()], components: [row] });
 				}
 			}
 		})

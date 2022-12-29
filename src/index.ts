@@ -16,34 +16,28 @@ export const client = new Bot();
 
 process.on('unhandledRejection', unhandledRejection);
 process.on('uncaughtException', uncaughtException);
-
 //Import events
 for (const file of eventsFile) {
 	let filePath = path.join(eventsPath, file);
-	let {event} = require(filePath);
+	let { event } = require(filePath);
 	client.on(event.getName(), event.execute);
 	console.log("\u001b[32m", `[✔] Loaded ${event.getName()} Event`, "\u001b[0m")
 }
-import { getPaymentsFromUser } from './API/TebexAPI';
-import { getTokenByGuild } from './API/Repositories/GuildRespository';
-// async function x33d() : Promise<void> {
-// 	const {token, type} = await getTokenByGuild('833078161112825916');
-// 	const res = await getPaymentsFromUser(token, 'ximivanlc')
-// 	console.log(res)
-// }
-// x33d();
+
 //Import commands
 if (commandsFile.length > 0) {
 	for (const file of commandsFile) {
 		let filePath = path.join(commandsPath, file);
-		let {command} = require(filePath);
-		if (command.getEnabled()) {
-			client.pushCommand(command.getData().name, command)
-			client.pushRestCommand(command.getData().toJSON());
-			console.log("\u001b[32m", `[✔] Loaded /${command.getData().name} command`, "\u001b[0m")
-		} else {
-			console.log("\x1b[31m", `[X] Disabled /${command.getData().name} command`, "\u001b[0m")
-		}
+		(async () => {
+			let { command } = await require(filePath);
+			if (command.getEnabled()) {
+				client.pushCommand(command.getData().name, command)
+				client.pushRestCommand(command.getData().toJSON());
+				console.log("\u001b[32m", `[✔] Loaded /${command.getData().name} command`, "\u001b[0m")
+			} else {
+				console.log("\x1b[31m", `[X] Disabled /${command.getData().name} command`, "\u001b[0m")
+			}
+		})();
 	}
 }
 

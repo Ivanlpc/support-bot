@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { config } from '..';
+import { config } from '../..';
 
 export function encrypt(message: string){
     const iv = crypto.randomBytes(16).toString("hex").slice(0, 16);
@@ -14,7 +14,6 @@ export function encrypt(message: string){
 }
 
 export function decrypt(token: string, iv: string) : string {
-    console.log(token, iv)
     const decrypter = crypto.createDecipheriv("aes-128-ofb", config.KEY, iv);
     let decryptedMsg = decrypter.update(token, "hex", "utf8");
     decryptedMsg += decrypter.final("utf8");

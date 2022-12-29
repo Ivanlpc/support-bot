@@ -8,16 +8,68 @@
 #                                      |_|   |_|                                
 
 TOKEN: "" 
-GUILD_ID: "" #ID of the discord server
-TEBEX_SECRET: ""
+KEY: ""
+TEBEX_URL: "https://plugin.tebex.io"
+CRAFTINGSTORE_URL: "https://api.craftingstore.net/v7"
+TRANSACTION_AVATAR_URL: "https://mc-heads.net/avatar/"
 
-Locale: []
+Locale: 
+  command_error: "There was an error while executing this command"
+  no_permission: "You don't have permission to execute this command"
+  different_user: "You can't use this!"
+  database_error: "There was an error with the database while trying to execute this command"
+  rejoin_error: "Please, make the bot rejoin the discord server before executing this command again"
+  server_owner: "You must be the server owner to execute this command!"
+  setup_not_done: "Bot setup is not done yet! You have to execute /setup command and follow the steps"
+  error_giftcard: "There was an error with the API while creating the Giftcard"
+  giftcard_not_found: "Giftcard not found"
+  giftcard_deleted: "You will not be able to use that Giftcard from now on!"
+  payment_not_found: "Payment not found"
+  craftingstore_not_support: "Craftingstore API does not support this!"
+  Embeds:
+    footer: "Developed by github.com/Ivanlpc"
+    setup:
+      title: "Setup"
+Database:
+  host: "localhost"
+  user: "root"
+  password: ""
+  database: "DiscordBot"
 
 Commands:
+  setup:
+    enabled: true
+    command_name: "setup" #Start with lowercase e.g 'search'
+    command_description: "Setup your server to use TebexAPI or CraftingStoreAPI" #Limit of 4000 characters
   search_transaction:
     enabled: true
-    command_name: "search" #Start with lowercase e.g 'search'
-    command_description: "Search specific transaction" #Limit of 4000 characters
-    command_requirement: "user"
-    command_requirement_description: "Nick of the user" #Limit of 4000 characters
-    
+    command_name: "search"
+    command_description: "Search a payment by the transaction ID"
+    command_requirements_id: "ID of the payment you want to search"
+    command_requirements_user: "Username of the payment with that ID"
+  help:
+    enabled: true
+    command_name: "help"
+    command_description: "Shows the commands for this bot"
+  perm:
+    enabled: true
+    command_name: "perm"
+    command_description: "Set permisisons to use the commands"
+  giftcard:
+    enabled: true
+    command_name: "giftcard"
+    command_description: "Manage giftcards of your server"
+    subcommand:
+      create:
+        name: 'create'
+        description: 'Create a Giftcard with the provided amount'
+        requirement_amount: 'Amount of the Giftcard you want to create'
+      delete: 
+        name: 'delete'
+        description: 'Delete a Giftcard with the provided ID'
+        requirement_id: "ID of the giftcard you want to delete"
+  ban:
+    enabled: true
+    command_name: 'ban'
+    command_description: 'Bans a player in your Tebex store.'
+    command_requirements_user: 'Username of the player'

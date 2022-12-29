@@ -6,19 +6,10 @@ const pool = mysql2.createPool(config.Database);
 
 pool.getConnection((err, conn) => {
     if (err) {
-        if (err.code === "PROTOCOL_CONNECTION_LOST") {
-			console.error("\x1b[31m", `Connection lost to Database`, "\u001b[0m")
-
-        }
-        if (err.code === "ER_CON_COUNT_ERROR") {
-            console.error("\x1b[31m", `Too many connections`, "\u001b[0m")
-
-        }
-        if (err.code === "ECONNREFUSED") {
-            console.error("\x1b[31m", `Connection refused to database`, "\u001b[0m");
+       
+            console.error("\x1b[31m", err, "\u001b[0m");
             process.exit(1);
 
-        }
     } else {
         if (conn) conn.release()
         console.log('Connected to MySQL Database');
