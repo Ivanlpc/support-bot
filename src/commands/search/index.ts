@@ -17,13 +17,14 @@ const data = new SlashCommandBuilder()
 	.setName(config.Commands.search_transaction.command_name)
 	.setDescription(config.Commands.search_transaction.command_description)
 	.addStringOption(option => option
-		.setName('user')
-		.setDescription(config.Commands.search_transaction.command_requirements_user)
-		.setRequired(true))
-	.addStringOption(option => option
 		.setName('id')
 		.setDescription(config.Commands.search_transaction.command_requirements_id)
 		.setRequired(true))
+	.addStringOption(option => option
+		.setName('user')
+		.setDescription(config.Commands.search_transaction.command_requirements_user)
+		.setRequired(false))
+	
 
 const enabled: boolean = config.Commands.search_transaction.enabled;
 
@@ -50,6 +51,8 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				return interaction.reply({ content: config.command_error, ephemeral: true })
 			}
 		} else {
+			let user = interaction.options.getString('user', false);
+			if(!user) return interaction.reply({content: config.Locale.user_required_craftingstore, ephemeral: true})
 			try {
 				const request = await CraftingstoreAPI.getPaymentByID(interaction.options.getString('user', true), interaction.options.getString('id', true), serverInfo.token, 1);
 				if (request === null) {

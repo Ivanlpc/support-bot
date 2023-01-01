@@ -26,6 +26,8 @@ Locale:
   giftcard_deleted: "You will not be able to use that Giftcard from now on!"
   payment_not_found: "Payment not found"
   craftingstore_not_support: "Craftingstore API does not support this!"
+  user_required_craftingstore: "The 'User' field is required in Craftingstore!"
+  no_payments_found: "This user has no payments"
   Embeds:
     footer: "Developed by github.com/Ivanlpc"
     setup:
@@ -72,4 +74,9 @@ Commands:
     enabled: true
     command_name: 'ban'
     command_description: 'Bans a player in your Tebex store.'
+    command_requirements_user: 'Username of the player'
+  payments:
+    enabled: true
+    command_name: 'payments'
+    command_description: 'Return all payments of the given username'
     command_requirements_user: 'Username of the player'

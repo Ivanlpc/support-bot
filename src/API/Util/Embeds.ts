@@ -65,10 +65,11 @@ export const Embeds = {
         .addFields(
             {name: '/setup', value: "```Configurate the bot to use it in your server```"},
             {name: '/perm (add/remove) (permission) (user/role)', value: "```Manage the permissions of this bot```"},
-            {name: '/search (user) (id)', value: "```Shows the purchase with that Transaction ID```"},
+            {name: '/search (id) (user)', value: "```Shows the purchase with that Transaction ID```"},
+            {name: '/payments (user)', value: "```Shows all purchases done with that username```"},
             {name: '/giftcard create (amount)', value: "```Create a Giftcard with the amount provided```"},
             {name: '/giftcard delete (id)', value: "```Delete the giftcard with that ID. TEBEX ONLY```"},
-            {name: '/ban (user)', value: "```Bans a player from buying in the shop. TEBEX ONLY```"},
+            {name: '/ban', value: "```Bans a player from buying in the shop. TEBEX ONLY```"},
 
 
 
