@@ -40,16 +40,6 @@ export const TebexAPI = {
         const res: IGifcard = await request<IGifcard>(url, requestOptions);
         return res;
     },
-    getPaymentsFromUser: async (token: string, username: string) => {
-        const url = `${config.TEBEX_URL}/user/${username}`;
-        var requestOptions = {
-            method: 'GET',
-            headers: buildHeaders(token)
-        };
-        const res = await request<ITransaction>(url, requestOptions);
-        return res;
-    
-    },
     createBan: async(token: string, user: string, reason: string, ip?: string ) : Promise<IBan> => {
         const url = `${config.TEBEX_URL}/bans`;
         const body = new FormData()
@@ -65,8 +55,21 @@ export const TebexAPI = {
         }
         const res = await request<IBan>(url, requestOptions);
         return res;
+    },
+    getPaymentsFromUser: async(token: string, user: string) => {
+        const url = `${config.TEBEX_URL}/user/${user}`;
+        var requestOptions = {
+            method: 'GET',
+            headers: buildHeaders(token)
+        }
+        const res = await request<IPayments | IError>(url, requestOptions);
+        return res;
     }
 
+}
+interface IError {
+    error_code: number,
+    error_message: string
 }
 
 interface IGifcard {
@@ -132,23 +135,26 @@ interface IPackage {
 }
 
 
-export interface ITransaction {
-    player: IPlayer,
+
+export interface IPayments {
+    
+    player: {
+        id: string,
+        username: string,
+        meta: string,
+        plugin_username_id: string
+    },
     banCount: number,
     chargebackRate: number,
-    payments: Array<IPayment>,
-
-}
-interface IPayment {
-    txn_id: string,
-    time: number,
-    price: number,
-    currency: string,
-    status: number
-}
-interface IPlayer {
-    id: string,
-    username: string,
-    meta: string,
-    plugin_username_id: number
+    payments: Array<{
+        txn_id: string,
+        time: number,
+        price: number,
+        currency: string,
+        status: number
+    }>
+    purchaseTotals: {
+        USD?: number,
+        GBP?: number 
+    }
 }

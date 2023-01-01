@@ -47,7 +47,7 @@ export const Embeds = {
         .addFields([
             { name: "Player", value: transaction.inGameName },
             { name: "UUID: ", value: transaction.uuid !== null ? transaction.uuid : 'None' },
-            { name: "Email: ", value: transaction.email },
+            { name: "Email: ", value: transaction.email ? transaction.email : 'No email provided' },
             { name: "Packages:", value: transaction.packageName },
             { name: "Price: ", value: transaction.price.toString() },
             { name: "Gateway: ", value: transaction.gateway },
@@ -67,7 +67,7 @@ export const Embeds = {
             {name: '/perm (add/remove) (permission) (user/role)', value: "```Manage the permissions of this bot```"},
             {name: '/search (user) (id)', value: "```Shows the purchase with that Transaction ID```"},
             {name: '/giftcard create (amount)', value: "```Create a Giftcard with the amount provided```"},
-            {name: '/giftcard delete (amount)', value: "```Create a Giftcard with the amount provided. TEBEX ONLY```"},
+            {name: '/giftcard delete (id)', value: "```Delete the giftcard with that ID. TEBEX ONLY```"},
             {name: '/ban (user)', value: "```Bans a player from buying in the shop. TEBEX ONLY```"},
 
 

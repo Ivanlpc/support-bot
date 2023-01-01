@@ -8,9 +8,7 @@ const buildHeaders = (token: string): Headers => {
     return header;
 }
 export const CraftingstoreAPI = {
-    getUserPayments: async (guildId: string, user: string) => {
 
-    },
     createGiftcard: async (token: string, amount: number,  name: string, id: string) => {
         const url = `${config.CRAFTINGSTORE_URL}/gift-cards`;
         const body = new FormData()
@@ -34,7 +32,7 @@ export const CraftingstoreAPI = {
     },
     getPaymentByID: async (user: string, transaction_id: string, token: string, page: number) : Promise<IPayment | null> => {
         return new Promise(async (resolve, reject) => {
-            let res = await requestPaymentById(user, token, page);
+            let res = await requestPaymentByPage(user, token, page);
             if(!res.success) reject(null);
             for(let i = res.meta.currentPage; i <= res.meta.lastPage; i++){
 
@@ -44,16 +42,29 @@ export const CraftingstoreAPI = {
                 }else if(index === -1 && i === res.meta.lastPage){
                     resolve(null);
                 }
-                res = await requestPaymentById(user, token, i);
+                res = await requestPaymentByPage(user, token, i);
                 if(!res.success){
                     reject(null);
                 }
             }
         })
+    },
+    getUserPayments: async (token: string, user: string) => {
+        const url = `${config.CRAFTINGSTORE_URL}/payments?player=${user}`;
+        var requestOptions = {
+            method: 'GET',
+            headers: buildHeaders(token)
+        }
+        const res : IRequest = await request<IRequest>(url, requestOptions);
+        if(res.meta.currentPage < res.meta.lastPage){
+            const res2 = await requestPaymentByPage(user, token, 2);
+            res.data.push(...res2.data.slice(0, 4))
+        }
+        return res;
     }
 }
 
-const requestPaymentById = async (user: string, token: string, page: number) => {
+const requestPaymentByPage = async (user: string, token: string, page: number) => {
     const url = `${config.CRAFTINGSTORE_URL}/payments?player=${user}&page=${page}`;
     var requestOptions = {
         method: 'GET',

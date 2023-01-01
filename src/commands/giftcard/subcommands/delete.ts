@@ -22,13 +22,16 @@ const execute = async (client: Client, interaction: ChatInputCommandInteraction)
 		if (serverInfo.type === 'tebex') {
 			try {
 				const request = await TebexAPI.deleteGiftcard(serverInfo.token, interaction.options.getString('id', true));
+				if (request.error_code === 404){
+					return interaction.reply({ content: config.Locale.giftcard_not_found, ephemeral: true })
+				}
 				if(request.error_code){
 					return interaction.reply({content: request.error_message, ephemeral: true});
 				}
 				if (request.data.void) {
 					return interaction.reply({ content: config.Locale.giftcard_deleted, ephemeral: false })
 				}
-				return interaction.reply({ content: config.Locale.giftcard_not_found })
+				
 			} catch (err) {
 				console.error(err);
 				return interaction.reply({ content: config.command_error, ephemeral: true })
