@@ -1,4 +1,3 @@
-import { config } from '..';
 import Event from '../structures/Event';
 import { newGuild } from '../API/Services/Guilds';
 import { Guild } from 'discord.js';

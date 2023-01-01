@@ -1,8 +1,7 @@
 import { execute } from "../Database"
 import { encrypt, decrypt } from "../Util/Crypto";
 import { Queries } from "../Queries"
-import { OkPacket, RowDataPacket } from "mysql2";
-import { Token } from "yaml/dist/parse/cst";
+import { OkPacket } from "mysql2";
 
 export const newGuild = async (guildId : string | null, name: string | undefined ) : Promise<boolean> => {
     const query: OkPacket = await execute(Queries.NewGuild, [guildId, name]);

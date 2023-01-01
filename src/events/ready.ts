@@ -3,7 +3,6 @@ import { Routes } from 'discord-api-types/v10';
 import { config } from '..';
 import Event from '../structures/Event';
 import Bot from '../structures/Bot';
-import DB from '../API/Database';
 
 const event = new Event('ready', async (client): Promise<void> => {
 

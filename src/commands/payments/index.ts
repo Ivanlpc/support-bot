@@ -15,7 +15,6 @@ import { hasPermission } from '../../API/Services/Permissions';
 import { getServerInformation } from '../../API/Services/Guilds';
 import { TebexAPI } from '../../API/External/TebexAPI';
 import { CraftingstoreAPI } from '../../API/External/CraftingstoreAPI';
-import { Embeds } from '../../API/Util/Embeds';
 
 
 const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
