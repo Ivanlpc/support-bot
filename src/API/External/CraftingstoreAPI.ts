@@ -9,7 +9,7 @@ const buildHeaders = (token: string): Headers => {
 }
 export const CraftingstoreAPI = {
 
-    createGiftcard: async (token: string, amount: number,  name: string, id: string) => {
+    createGiftcard: async (token: string, amount: number, name: string, id: string) => {
         const url = `${config.CRAFTINGSTORE_URL}/gift-cards`;
         const body = new FormData()
         body.append('amount', amount.toString())
@@ -18,7 +18,7 @@ export const CraftingstoreAPI = {
             headers: buildHeaders(token),
             body: body
         }
-        const res : IGifcard = await request<IGifcard>(url, requestOptions);
+        const res: IGifcard = await request<IGifcard>(url, requestOptions);
         return res;
     },
     deleteGiftcard: async (token: string, id: string) => {
@@ -27,24 +27,26 @@ export const CraftingstoreAPI = {
             method: 'DELETE',
             headers: buildHeaders(token)
         }
-        const res : IRequest = await request<IRequest>(url, requestOptions);
+        const res: IRequest = await request<IRequest>(url, requestOptions);
         return res;
     },
-    getPaymentByID: async (user: string, transaction_id: string, token: string, page: number) : Promise<IPayment | null> => {
+    getPaymentByID: async (user: string, transaction_id: string, token: string, page: number): Promise<IPayment | null> => {
         return new Promise(async (resolve, reject) => {
             let res = await requestPaymentByPage(user, token, page);
-            if(!res.success) reject(null);
-            for(let i = res.meta.currentPage; i <= res.meta.lastPage; i++){
+            if (!res.success) reject(null);
+            for (let i = page; i <= res.meta.lastPage; i++) {
 
                 let index = res.data.findIndex(payment => payment.transactionId === transaction_id);
-                if(index !== -1) {
+                if (index !== -1) {
                     resolve(res.data[index]);
-                }else if(index === -1 && i === res.meta.lastPage){
+                } else if (index === -1 && i === res.meta.lastPage) {
                     resolve(null);
                 }
-                res = await requestPaymentByPage(user, token, i);
-                if(!res.success){
-                    reject(null);
+                if (i + 1 <= res.meta.lastPage) {
+                    res = await requestPaymentByPage(user, token, i + 1);
+                    if (!res.success) {
+                        reject(null);
+                    }
                 }
             }
         })
@@ -55,8 +57,8 @@ export const CraftingstoreAPI = {
             method: 'GET',
             headers: buildHeaders(token)
         }
-        const res : IRequest = await request<IRequest>(url, requestOptions);
-        if(res.meta.currentPage < res.meta.lastPage){
+        const res: IRequest = await request<IRequest>(url, requestOptions);
+        if (res.meta.currentPage < res.meta.lastPage) {
             const res2 = await requestPaymentByPage(user, token, 2);
             res.data.push(...res2.data.slice(0, 4))
         }

@@ -52,7 +52,7 @@ export const Embeds = {
             { name: "Price: ", value: transaction.price.toString() },
             { name: "Gateway: ", value: transaction.gateway },
             { name: "Status: ", value: transaction.status },
-            { name: "Fecha: ", value: new Date(transaction.timestamp * 1000).toDateString() }
+            { name: "Fecha: ", value: new Date(transaction.timestamp * 1000).toLocaleDateString() }
 
         ])
         .setColor(transaction.status !== 'PAID' ? 'Red' : 'Green')
@@ -68,15 +68,15 @@ export const Embeds = {
             {name: '/search (id) (user)', value: "```Shows the purchase with that Transaction ID```"},
             {name: '/payments (user)', value: "```Shows all purchases done with that username```"},
             {name: '/giftcard create (amount)', value: "```Create a Giftcard with the amount provided```"},
-            {name: '/giftcard delete (id)', value: "```Delete the giftcard with that ID. TEBEX ONLY```"},
-            {name: '/ban', value: "```Bans a player from buying in the shop. TEBEX ONLY```"},
+            {name: '/giftcard delete (id)', value: "```Delete the giftcard with that ID. [TEBEX ONLY]```"},
+            {name: '/ban', value: "```Bans a player from buying in the shop. [TEBEX ONLY]```"},
 
 
 
         ).setFooter({
             text: config.Locale.Embeds.footer
         })
-        .setColor("Aqua")
+        .setColor("#2F3136")
     },
     giftcard_embed: (code: string, amount: string, id: string, currency? : string) => {
         return new EmbedBuilder()
