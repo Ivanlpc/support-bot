@@ -26,7 +26,7 @@ const execute = async (client: Client, interaction: ChatInputCommandInteraction)
 					return interaction.reply({ content: config.Locale.giftcard_not_found, ephemeral: true })
 				}
 				if(request.error_code){
-					return interaction.reply({content: request.error_message, ephemeral: true});
+					return interaction.reply({content: "TEBEX: "+request.error_message, ephemeral: true});
 				}
 				if (request.data.void) {
 					return interaction.reply({ content: config.Locale.giftcard_deleted, ephemeral: false })

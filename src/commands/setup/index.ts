@@ -67,7 +67,7 @@ modal.addComponents(new ActionRowBuilder<ModalActionRowComponentBuilder>().addCo
 
 async function execute(client: Client, interaction: ChatInputCommandInteraction) {
 	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId) {
-		//if(interaction.guild?.ownerId !== interaction.user.id) return interaction.reply({content: config.Locale.server_owner, ephemeral: true})
+		if(interaction.guild?.ownerId !== interaction.user.id) return interaction.reply({content: config.Locale.server_owner, ephemeral: true})
 		await interaction.reply({ embeds: [Embeds.accepting_terms_embed()], components: [buttons] })
 		
 		const filter = (d: any) => {

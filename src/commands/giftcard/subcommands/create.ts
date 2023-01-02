@@ -25,7 +25,7 @@ const execute = async(client: Client, interaction: ChatInputCommandInteraction) 
 			try {
 				const request = await TebexAPI.createGiftcard(serverInfo.token, interaction.options.getInteger('amount', true), interaction.user.id, interaction.user.tag);
 				if(request.error_code){
-					return interaction.reply({content: request.error_message, ephemeral: true});
+					return interaction.reply({content: "TEBEX: "+request.error_message, ephemeral: true});
 				}
 				if (request.data.code.length > 0) {
 					return interaction.reply({ embeds: [Embeds.giftcard_embed(request.data.code, request.data.balance.starting, request.data.id.toString() ,request.data.balance.currency)] })
@@ -37,7 +37,7 @@ const execute = async(client: Client, interaction: ChatInputCommandInteraction) 
 			}
 		} else {
 			try{
-				const request = await CraftingstoreAPI.createGiftcard(serverInfo.token, interaction.options.getInteger('amount', true), interaction.user.tag, interaction.user.id);
+				const request = await CraftingstoreAPI.createGiftcard(serverInfo.token, interaction.options.getInteger('amount', true));
 				if(!request.success) {
 					return interaction.reply({content: config.Locale.error_giftcard})
 				} else {

@@ -4,7 +4,7 @@ export const Queries = {
     UpdateToken: `UPDATE guilds SET token = ?, hash = ?, setup = 1, type = ? WHERE id = ?`,
     GetGuildToken: `SELECT token, hash, type FROM guilds WHERE id = ? AND setup = 1`,
     GetToken: `SELECT token, hash FROM guilds WHERE id = ? AND setup = 1`,
-    GetRolesFromGuild: `SELECT p.id FROM permissions p JOIN permissions_name n ON(p.permission_node = n.value) WHERE p.guildId = ? AND n.command = ?`,
+    GetRolesFromGuild: `SELECT p.id FROM permissions p JOIN permissions_name n ON(p.permission_node = n.value) WHERE p.guildId = ? AND (n.command = ? OR n.command = ?)`,
     GetCommandsData: `SELECT name, value FROM permissions_name`,
     NewPermission: `INSERT IGNORE INTO permissions (guildId, id, permission_node) VALUES (?, ?, ?)`,
     RemovePermission: `DELETE FROM permissions WHERE guildId =? AND id=? AND permission_node =?`,

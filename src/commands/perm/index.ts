@@ -7,7 +7,7 @@ import {
 
 } from 'discord.js';
 import { config } from '../..';
-import { getCommandChoices, getRolesWithPermission, addPermission, removePermission } from '../../API/Services/Permissions';
+import { getCommandChoices, addPermission, removePermission } from '../../API/Services/Permissions';
 import { hasPermission } from '../../API/Services/Permissions';
 
 module.exports = (async function () {

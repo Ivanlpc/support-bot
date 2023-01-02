@@ -41,7 +41,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				const request = await TebexAPI.getPaymentFromId(serverInfo.token, interaction.options.getString('id', true));
 				if (!Array.isArray(request)) {
 					if (request.error_code) {
-						return interaction.reply({ content: request.error_message, ephemeral: true })
+						return interaction.reply({ content: "TEBEX: "+request.error_message, ephemeral: true })
 					}
 					return interaction.reply({ embeds: [Embeds.transaction_tebex_embed(request)] })
 				}

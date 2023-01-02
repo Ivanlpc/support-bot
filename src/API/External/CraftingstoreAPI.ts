@@ -9,7 +9,7 @@ const buildHeaders = (token: string): Headers => {
 }
 export const CraftingstoreAPI = {
 
-    createGiftcard: async (token: string, amount: number, name: string, id: string) => {
+    createGiftcard: async (token: string, amount: number) => {
         const url = `${config.CRAFTINGSTORE_URL}/gift-cards`;
         const body = new FormData()
         body.append('amount', amount.toString())

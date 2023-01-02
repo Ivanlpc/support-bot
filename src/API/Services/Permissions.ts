@@ -2,9 +2,10 @@ import { execute } from "../Database";
 import { Queries } from "../Queries";
 import { OkPacket } from "mysql2";
 import { GuildMember } from "discord.js";
+import { config } from "../..";
 
-export const getRolesWithPermission = async (guildId: string | null, permission_node: string) : Promise<Array<string>> => {
-    const perms = await execute<IRoles[]>(Queries.GetRolesFromGuild, [guildId, permission_node])
+const getRolesWithPermission = async (guildId: string | null, permission_node: string) : Promise<Array<string>> => {
+    const perms = await execute<IRoles[]>(Queries.GetRolesFromGuild, [guildId, permission_node, config.Commands.all_permissions])
     return perms.map<string>(elem => elem.id);
 }
 export const getCommandChoices = (): Promise<ICommand[]> => {

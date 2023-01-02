@@ -1,5 +1,6 @@
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
+import { ActivityType } from 'discord.js';
 import { config } from '..';
 import Event from '../structures/Event';
 import Bot from '../structures/Bot';
@@ -29,6 +30,8 @@ const event = new Event('ready', async (client): Promise<void> => {
             }
         }
         console.log(`Logged as ${client.user?.tag}`);
+        client.user?.setActivity('/help', { type: ActivityType.Playing })
+
     }
 })
 

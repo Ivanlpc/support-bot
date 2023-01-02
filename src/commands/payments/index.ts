@@ -48,7 +48,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 		if (serverInfo.type === 'tebex') {
 			const request = await TebexAPI.getPaymentsFromUser(serverInfo.token, interaction.options.getString('user', true));
 			if (("error_code" in (request))) {
-				return interaction.reply({ content: request.error_message, ephemeral: true })
+				return interaction.reply({ content: "TEBEX: "+request.error_message, ephemeral: true })
 			}
 			if (request.payments.length === 0) {
 				return interaction.reply({ content: config.Locale.no_payments_found, ephemeral: true })

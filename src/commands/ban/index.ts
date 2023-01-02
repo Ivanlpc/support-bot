@@ -53,7 +53,7 @@ const enabled: boolean = config.Commands.ban.enabled;
 
 async function execute(client: Client, interaction: ChatInputCommandInteraction) {
     if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
-        const allowed: boolean = await hasPermission(interaction.member, config.Commands.perm.command_name);
+        const allowed: boolean = await hasPermission(interaction.member, config.Commands.ban.command_name);
         if (!allowed) {
             return interaction.reply({ content: config.Locale.no_permission, ephemeral: true })
         }
@@ -74,10 +74,12 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
                     if (!request.error_code) {
                         return res.reply({ embeds: [Embeds.ban_embed(request.data.user.ign, request.data.reason, request.data.id.toString(), ip)] })
                     } else {
-                        if (request.error_code == 403) {
-                            return res.reply({ content: request.error_message, ephemeral: true })
-                        } else if (request.error_code == 422) {
+                        if (request.error_code == 422) {
                             return res.reply({ content: `The username ${username} is already banned!` })
+
+                        } else if (request.error_code) {
+                            return res.reply({ content: "TEBEX: "+request.error_message, ephemeral: true })
+
 
                         }
                     }
