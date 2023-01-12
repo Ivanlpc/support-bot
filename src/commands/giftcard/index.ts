@@ -8,6 +8,7 @@ import {
 import { config } from '../..';
 import { create } from './subcommands/create';
 import { remove } from './subcommands/delete';
+import { recover } from './subcommands/recover';
 import { hasPermission } from '../../API/Services/Permissions';
 
 const data = new SlashCommandBuilder()
@@ -15,13 +16,14 @@ const data = new SlashCommandBuilder()
 	.setDescription(config.Commands.giftcard.command_description)
 	.addSubcommand(create.getData())
 	.addSubcommand(remove.getData())
+	.addSubcommand(recover.getData())
 
 const enabled: boolean = config.Commands.giftcard.enabled;
 
 async function execute(client: Client, interaction: ChatInputCommandInteraction) {
 	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
 		const allowed: boolean = await hasPermission(interaction.member, config.Commands.giftcard.command_name);
-		if (!allowed) {
+		if (!allowed && interaction.options.getSubcommand() !== 'recover') {
 			return interaction.reply({ content: config.Locale.no_permission, ephemeral: true })
 		}
 		if (interaction.options.getSubcommand() === 'create') {
@@ -32,9 +34,17 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				console.error(err);
 				return interaction.reply({ content: config.Locale.command_error, ephemeral: true })
 			}
-		} else {
+		} else if(interaction.options.getSubcommand() === 'delete') {
 			try {
 				await remove.execute(client, interaction)
+
+			} catch (err) {
+				console.error(err);
+				return interaction.reply({ content: config.Locale.command_error, ephemeral: true })
+			}
+		} else {
+			try {
+				await recover.execute(client, interaction)
 
 			} catch (err) {
 				console.error(err);

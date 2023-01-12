@@ -18,17 +18,17 @@ export const TebexAPI = {
         return res;
            
     },
-    createGiftcard: async (token: string, amount: number, id: string, name: string) => {
+    createGiftcard: async (token: string, amount: number, id: string, name: string, link: string | undefined) => {
         const url = `${config.TEBEX_URL}/gift-cards`;
         const body = new FormData()
         body.append('amount', amount.toString())
-        body.append('note', 'Created with Discord bot from ' + name + ' with id: '+ id)
+        body.append('note', 'LINKED:'+link + ': Created with Discord bot from ' + name + ' with id: '+ id)
         var requestOptions = {
             method: 'POST',
             headers: buildHeaders(token),
             body: body
         }
-        const res : IGifcard = await request<IGifcard>(url, requestOptions);
+        const res = await request<IManageGiftcard | IError>(url, requestOptions);
         return res;
     },
     deleteGiftcard: async (token: string, id: string) => {
@@ -37,7 +37,7 @@ export const TebexAPI = {
             method: 'DELETE',
             headers: buildHeaders(token)
         }
-        const res: IGifcard = await request<IGifcard>(url, requestOptions);
+        const res = await request<IManageGiftcard | IError>(url, requestOptions);
         return res;
     },
     createBan: async(token: string, user: string, reason: string, ip?: string ) : Promise<IBan> => {
@@ -64,6 +64,22 @@ export const TebexAPI = {
         }
         const res = await request<IPayments | IError>(url, requestOptions);
         return res;
+    },recoverGiftcard: async (token: string, user: string) => {
+        const url = `${config.TEBEX_URL}/gift-cards`;
+        var requestOptions = {
+            method: 'GET',
+            headers: buildHeaders(token)
+        };
+        const res = await request<IAllGiftcards | IError>(url, requestOptions);
+        if(!('error_code' in res)){
+            let giftcard = res.data.find(elem => elem.note.split(':')[1] === user)
+            if(giftcard) return giftcard;
+            else return{
+                error_code: 422,
+                error_message: 'Giftcard not found with the username '+ user
+            }
+        }
+        return res;
     }
 
 }
@@ -71,11 +87,13 @@ interface IError {
     error_code: number,
     error_message: string
 }
-
-interface IGifcard {
-    error_code: number | undefined,
-    error_message: string | undefined,
-    data: {
+interface IAllGiftcards {
+    data: Array<IGifcard>
+}
+interface IManageGiftcard {
+    data: IGifcard
+}
+interface IGifcard { 
         id: number,
         code: string,
         balance: {
@@ -85,7 +103,6 @@ interface IGifcard {
         },
     note: string,
     void: boolean
-    }
 }
 
 interface IBan {

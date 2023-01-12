@@ -78,7 +78,7 @@ export const Embeds = {
         })
         .setColor("#2F3136")
     },
-    giftcard_embed: (code: string, amount: string, id: string, currency? : string) => {
+    giftcard_embed: (code: string, amount: string, id: string, user: string | undefined,  currency: string | undefined) => {
         return new EmbedBuilder()
         .setTitle(`Giftcard Created ID: ${id}`)
         .setDescription('Here is the information:')

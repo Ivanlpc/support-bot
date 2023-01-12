@@ -1,6 +1,6 @@
 {
   "name": "support-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Discord typescript support bot for tebex and craftingstore",
   "main": "./build/index.js",
   "scripts": {

@@ -22,10 +22,8 @@ const execute = async (client: Client, interaction: ChatInputCommandInteraction)
 		if (serverInfo.type === 'tebex') {
 			try {
 				const request = await TebexAPI.deleteGiftcard(serverInfo.token, interaction.options.getString('id', true));
-				if (request.error_code === 404){
-					return interaction.reply({ content: config.Locale.giftcard_not_found, ephemeral: true })
-				}
-				if(request.error_code){
+				
+				if(('error_code' in request)){
 					return interaction.reply({content: "TEBEX: "+request.error_message, ephemeral: true});
 				}
 				if (request.data.void) {
