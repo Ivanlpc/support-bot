@@ -1,28 +1,52 @@
-import { config } from "../..";
+import config from "../../config.json";
+
 import { request } from "../Requests";
 
+/**
+ * Build Headers to make a request
+ * @param token Token of your Craftingstore shop
+ * @returns Header with the token
+ */
 const buildHeaders = (token: string): Headers => {
     var header = new Headers();
     header.append("X-Tebex-Secret", token);
     return header;
 }
+
 export const TebexAPI = {
-    getPaymentFromId : async <T>(token: string, transaction_id: string) => {
+
+    /**
+     * Get a payment with the ID provided
+     * @param token Token of your Tebex store
+     * @param transaction_id ID of the payment you want to get
+     * @returns IPaymentFromID | []
+     */
+    getPaymentFromId: async <T>(token: string, transaction_id: string): Promise<IPaymentFromID | Array<T>> => {
         const url = `${config.TEBEX_URL}/payments/${transaction_id}`;
         var requestOptions = {
             method: 'GET',
             headers: buildHeaders(token)
         };
-        const res: IPaymentFromID | Array<T>  = await request< Array<T> | IPaymentFromID>(url, requestOptions);
-        
+        const res: IPaymentFromID | Array<T> = await request<Array<T> | IPaymentFromID>(url, requestOptions);
+
         return res;
-           
+
     },
-    createGiftcard: async (token: string, amount: number, id: string, name: string, link: string | undefined) => {
+
+    /**
+     * Create a giftcard 
+     * @param token Token of your Tebex Store
+     * @param amount Amount of the giftcard to create
+     * @param id ID of the discord account that creates the giftcard
+     * @param name Name of the discord account that creates the giftcard
+     * @param link Optional. Discord ID of the username to link the giftcard 
+     * @returns IManageGiftcard | IError
+     */
+    createGiftcard: async (token: string, amount: number, id: string, name: string, link?: string): Promise<IManageGiftcard | IError> => {
         const url = `${config.TEBEX_URL}/gift-cards`;
         const body = new FormData()
         body.append('amount', amount.toString())
-        body.append('note', 'LINKED:'+link + ': Created with Discord bot from ' + name + ' with id: '+ id)
+        body.append('note', 'LINKED:' + link + ': Created with Discord bot from ' + name + ' with id: ' + id)
         var requestOptions = {
             method: 'POST',
             headers: buildHeaders(token),
@@ -31,7 +55,14 @@ export const TebexAPI = {
         const res = await request<IManageGiftcard | IError>(url, requestOptions);
         return res;
     },
-    deleteGiftcard: async (token: string, id: string) => {
+
+    /**
+     * Delete a Giftcard from your Tebex store
+     * @param token Token of your Tebex store
+     * @param id ID of the Giftcard you want to delete
+     * @returns IManageGiftcard | IError
+     */
+    deleteGiftcard: async (token: string, id: string): Promise<IManageGiftcard | IError> => {
         const url = `${config.TEBEX_URL}/gift-cards/${id}`;
         var requestOptions = {
             method: 'DELETE',
@@ -40,12 +71,21 @@ export const TebexAPI = {
         const res = await request<IManageGiftcard | IError>(url, requestOptions);
         return res;
     },
-    createBan: async(token: string, user: string, reason: string, ip?: string ) : Promise<IBan> => {
+
+    /**
+     * Ban a user from buying in your Tebex store
+     * @param token Token of your Tebex store
+     * @param user Name of the user you want to ban
+     * @param reason Reason of the ban
+     * @param ip Optional. IP of the user you want to ban
+     * @returns IBan
+     */
+    createBan: async (token: string, user: string, reason: string, ip?: string): Promise<IBan> => {
         const url = `${config.TEBEX_URL}/bans`;
         const body = new FormData()
         body.append('reason', reason);
         body.append('user', user);
-        if(ip){
+        if (ip) {
             body.append('ip', ip);
         }
         var requestOptions = {
@@ -56,7 +96,14 @@ export const TebexAPI = {
         const res = await request<IBan>(url, requestOptions);
         return res;
     },
-    getPaymentsFromUser: async(token: string, user: string) => {
+
+    /**
+     * Get all payments made by the username provided
+     * @param token Token of your Tebex store
+     * @param user Name of the user you want to get the payments
+     * @returns IPayments | IError
+     */
+    getPaymentsFromUser: async (token: string, user: string): Promise<IPayments | IError> => {
         const url = `${config.TEBEX_URL}/user/${user}`;
         var requestOptions = {
             method: 'GET',
@@ -64,22 +111,29 @@ export const TebexAPI = {
         }
         const res = await request<IPayments | IError>(url, requestOptions);
         return res;
-    },recoverGiftcard: async (token: string, user: string) => {
+    },
+
+    /**
+     * Get all giftcards linked to the provided username
+     * @param token Token of your Tebex store
+     * @param user Name of the user
+     * @returns IGiftcard[] | IError
+     */
+    recoverGiftcard: async (token: string, user: string) => {
         const url = `${config.TEBEX_URL}/gift-cards`;
         var requestOptions = {
             method: 'GET',
             headers: buildHeaders(token)
         };
         const res = await request<IAllGiftcards | IError>(url, requestOptions);
-        if(!('error_code' in res)){
-            let giftcard = res.data.find(elem => elem.note.split(':')[1] === user)
-            if(giftcard) return giftcard;
-            else return{
-                error_code: 422,
-                error_message: 'Giftcard not found with the username '+ user
-            }
+        if ('error_code' in res) return res;
+        let giftcard = res.data.filter(elem => elem.note.split(':')[1] === user)
+        if (giftcard.length > 0) return giftcard;
+        else return {
+            error_code: 422,
+            error_message: 'Giftcards not found with the username ' + user
         }
-        return res;
+
     }
 
 }
@@ -93,14 +147,14 @@ interface IAllGiftcards {
 interface IManageGiftcard {
     data: IGifcard
 }
-interface IGifcard { 
-        id: number,
-        code: string,
-        balance: {
-            starting: string,
-            remaining: string,
-            currency: string
-        },
+interface IGifcard {
+    id: number,
+    code: string,
+    balance: {
+        starting: string,
+        remaining: string,
+        currency: string
+    },
     note: string,
     void: boolean
 }
@@ -122,7 +176,7 @@ interface IBan {
 }
 
 
-export interface IPaymentFromID{
+export interface IPaymentFromID {
     error_code: number | undefined,
     error_message: string | undefined,
     id: number,
@@ -154,7 +208,7 @@ interface IPackage {
 
 
 export interface IPayments {
-    
+
     player: {
         id: string,
         username: string,
@@ -172,6 +226,6 @@ export interface IPayments {
     }>
     purchaseTotals: {
         USD?: number,
-        GBP?: number 
+        GBP?: number
     }
 }

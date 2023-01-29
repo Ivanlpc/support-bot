@@ -1,7 +1,12 @@
-import { config } from "../..";
+import config from "../../config.json";
+
 import { request } from "../Requests";
 
-
+/**
+ * Build Headers to make a request
+ * @param token Token of your Craftingstore shop
+ * @returns Header with the token
+ */
 const buildHeaders = (token: string): Headers => {
     var header = new Headers();
     header.append("token", token);
@@ -9,7 +14,13 @@ const buildHeaders = (token: string): Headers => {
 }
 export const CraftingstoreAPI = {
 
-    createGiftcard: async (token: string, amount: number) => {
+    /**
+     * Create a giftcard in Craftingstore
+     * @param token Token of your Craftingstore shop
+     * @param amount Amount of the giftcard you want to create
+     * @returns IGiftcard
+     */
+    createGiftcard: async (token: string, amount: number): Promise<IGifcard> => {
         const url = `${config.CRAFTINGSTORE_URL}/gift-cards`;
         const body = new FormData()
         body.append('amount', amount.toString())
@@ -21,6 +32,13 @@ export const CraftingstoreAPI = {
         const res: IGifcard = await request<IGifcard>(url, requestOptions);
         return res;
     },
+
+    /**
+     * Delete a giftcard from Craftingstore shop
+     * @param token Token of your Craftingstore shop
+     * @param id ID of the giftcard you want to delete
+     * @returns IRequest
+     */
     deleteGiftcard: async (token: string, id: string) => {
         const url = `${config.CRAFTINGSTORE_URL}/gift-cards/${id}`;
         var requestOptions = {
@@ -30,6 +48,15 @@ export const CraftingstoreAPI = {
         const res: IRequest = await request<IRequest>(url, requestOptions);
         return res;
     },
+
+    /**
+     * Get a Payment by the ID provided
+     * @param user Name of the user who made the payment
+     * @param transaction_id ID of the payment
+     * @param token Token of your Craftingstore shop
+     * @param page Starting at 1, page of the payment
+     * @returns null or IPayment
+     */
     getPaymentByID: async (user: string, transaction_id: string, token: string, page: number): Promise<IPayment | null> => {
         return new Promise(async (resolve, reject) => {
             let res = await requestPaymentByPage(user, token, page);
@@ -51,7 +78,15 @@ export const CraftingstoreAPI = {
             }
         })
     },
-    getUserPayments: async (token: string, user: string) => {
+
+    /**
+     * Get all payments made by the username provided
+     * @param token Token of your Craftingstore shop
+     * @param user Name of the user who made the payments
+     * @returns IRequest
+     */
+
+    getUserPayments: async (token: string, user: string): Promise<IRequest> => {
         const url = `${config.CRAFTINGSTORE_URL}/payments?player=${user}`;
         var requestOptions = {
             method: 'GET',
@@ -66,7 +101,15 @@ export const CraftingstoreAPI = {
     }
 }
 
-const requestPaymentByPage = async (user: string, token: string, page: number) => {
+/**
+ * Request payment by page
+ * @param user Name of the user who made the payments
+ * @param token Token of your Craftingstore shop
+ * @param page Starting at 1, page of the payment
+ * @returns IRequest
+ */
+
+const requestPaymentByPage = async (user: string, token: string, page: number): Promise<IRequest> => {
     const url = `${config.CRAFTINGSTORE_URL}/payments?player=${user}&page=${page}`;
     var requestOptions = {
         method: 'GET',

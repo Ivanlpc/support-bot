@@ -1,4 +1,9 @@
-
+/**
+ * 
+ * @param input - URL you want to request
+ * @param init - Options of the request
+ * @returns Promise with the response
+ */
 export const request = <T>(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<T> => {
     try {
       return new Promise<T>((resolve, reject) => {

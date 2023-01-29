@@ -1,0 +1,78 @@
+{
+  "TOKEN": "",
+  "KEY": "",
+  "TEBEX_URL": "https://plugin.tebex.io",
+  "CRAFTINGSTORE_URL": "https://api.craftingstore.net/v7",
+  "TRANSACTION_AVATAR_URL": "https://mc-heads.net/avatar/",
+
+  "Database": {
+    "host": "localhost",
+    "user": "bot",
+    "password": "",
+    "database": "shopy"
+  },
+  "Commands": {
+    "all_permissions": "all",
+    "setup": {
+      "enabled": true,
+      "command_name": "setup",
+      "command_description": "Setup your server to use TebexAPI or CraftingStoreAPI"
+    },
+    "search_transaction": {
+      "enabled": true,
+      "command_name": "search",
+      "command_description": "Search a payment by the transaction ID",
+      "command_requirements_id": "ID of the payment you want to search",
+      "command_requirements_user": "Username of the payment with that ID"
+    },
+    "help": {
+      "enabled": true,
+      "command_name": "help",
+      "command_description": "Shows the commands for this bot"
+    },
+    "perm": {
+      "enabled": true,
+      "command_name": "perm",
+      "command_description": "Set permisisons to use the commands"
+    },
+    "giftcard": {
+      "enabled": true,
+      "command_name": "giftcard",
+      "command_description": "Manage giftcards of your server",
+      "subcommand": {
+        "create": {
+          "name": "create",
+          "description": "Create a Giftcard with the provided amount",
+          "requirement_amount": "Amount of the Giftcard you want to create",
+          "non_required_user": "TEBEX ONLY. Link the giftcard to that user, so they can use /giftcard recover"
+        },
+        "delete": {
+          "name": "delete",
+          "description": "Delete a Giftcard with the provided ID",
+          "requirement_id": "ID of the giftcard you want to delete"
+        },
+        "recover": {
+          "name": "recover",
+          "description": "TEBEX ONLY. Recover a giftcard linked to your discord ID that has been created by this bot"
+        }
+      }
+    },
+    "ban": {
+      "enabled": true,
+      "command_name": "ban",
+      "command_description": "Bans a player in your Tebex store.",
+      "command_requirements_user": "Username of the player"
+    },
+    "payments": {
+      "enabled": true,
+      "command_name": "payments",
+      "command_description": "Return all payments of the given username",
+      "command_requirements_user": "Username of the player"
+    },
+    "lang": {
+      "enabled": false,
+      "command_name": "lang",
+      "command_description": "Switch the language of the bot messages"
+    }
+  }
+}

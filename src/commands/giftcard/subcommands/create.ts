@@ -1,10 +1,13 @@
 import { ChatInputCommandInteraction, Client, SlashCommandSubcommandBuilder, GuildMember } from "discord.js";
-import { config } from "../../..";
+import config from "../../../config.json";
 import SubCommand from "../../../structures/Subcommand";
 import { getServerInformation } from "../../../API/Services/Guilds"; 
 import { TebexAPI } from "../../../API/External/TebexAPI";
 import { CraftingstoreAPI } from "../../../API/External/CraftingstoreAPI";
 import { Embeds } from "../../../API/Util/Embeds";
+
+const messages = require("../../../messages.json");
+
 
 const data = new SlashCommandSubcommandBuilder()
     .setName(config.Commands.giftcard.subcommand.create.name)
@@ -23,7 +26,7 @@ const data = new SlashCommandSubcommandBuilder()
 const execute = async(client: Client, interaction: ChatInputCommandInteraction) => {
     if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
     const serverInfo = await getServerInformation(interaction.guildId);
-		if (serverInfo.setup === 0) return interaction.reply({ content: config.Locale.setup_not_done, ephemeral: true })
+		if (serverInfo.setup === 0) return interaction.reply({ content: messages[serverInfo.lang].setup_not_done, ephemeral: true })
 		if (serverInfo.type === 'tebex') {
 
 			try {
@@ -32,24 +35,24 @@ const execute = async(client: Client, interaction: ChatInputCommandInteraction) 
 					return interaction.reply({content: "TEBEX: "+request.error_message, ephemeral: true});
 				}
 				if (request.data.code.length > 0) {
-					return interaction.reply({ embeds: [Embeds.giftcard_embed(request.data.code, request.data.balance.starting, request.data.id.toString(), interaction.options.getUser('user', false)?.id, request.data.balance.currency)] })
+					return interaction.reply({ embeds: [Embeds.giftcard_embed(request.data.code, request.data.balance.starting, request.data.id.toString(), serverInfo.lang, interaction.options.getUser('user', false)?.id, request.data.balance.currency)] })
 				}
-				return interaction.reply({ content: config.Locale.error_giftcard })
+				return interaction.reply({ content: messages[serverInfo.lang].error_giftcard })
 			} catch (err) {
 				console.error(err);
-				return interaction.reply({ content: config.command_error, ephemeral: true })
+				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 		} else {
 			try{
 				const request = await CraftingstoreAPI.createGiftcard(serverInfo.token, interaction.options.getInteger('amount', true));
 				if(!request.success) {
-					return interaction.reply({content: config.Locale.error_giftcard})
+					return interaction.reply({content: messages[serverInfo.lang].error_giftcard})
 				} else {
-					return interaction.reply({embeds: [Embeds.giftcard_embed(request.data.code, request.data.amount, request.data.id.toString(), undefined, undefined)]})
+					return interaction.reply({embeds: [Embeds.giftcard_embed(request.data.code, request.data.amount, request.data.id.toString(),serverInfo.lang)]})
 				}
 			}catch(err){
 				console.error(err);
-				return interaction.reply({ content: config.command_error, ephemeral: true })
+				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 			
 		}

@@ -5,13 +5,16 @@ import {
 	ChatInputCommandInteraction,
 	GuildMember
 } from 'discord.js';
-import { config } from '../..';
+import config from "../../config.json";
 import { hasPermission } from '../../API/Services/Permissions';
 
 import { getServerInformation } from '../../API/Services/Guilds';
 import { TebexAPI } from '../../API/External/TebexAPI';
 import { CraftingstoreAPI } from '../../API/External/CraftingstoreAPI';
 import { Embeds } from '../../API/Util/Embeds';
+
+const messages = require("../../messages.json");
+
 
 const data = new SlashCommandBuilder()
 	.setName(config.Commands.search_transaction.command_name)
@@ -30,12 +33,13 @@ const enabled: boolean = config.Commands.search_transaction.enabled;
 
 async function execute(client: Client, interaction: ChatInputCommandInteraction) {
 	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
+		
+		const serverInfo = await getServerInformation(interaction.guildId);
+		if (serverInfo.setup === 0) return interaction.reply({ content: messages[serverInfo.lang].setup_not_done, ephemeral: true })
 		const allowed: boolean = await hasPermission(interaction.member, config.Commands.search_transaction.command_name);
 		if (!allowed) {
-			return interaction.reply({ content: config.Locale.no_permission, ephemeral: true })
+			return interaction.reply({ content: messages[serverInfo.lang].no_permission, ephemeral: true })
 		}
-		const serverInfo = await getServerInformation(interaction.guildId);
-		if (serverInfo.setup === 0) return interaction.reply({ content: config.Locale.setup_not_done, ephemeral: true })
 		if (serverInfo.type === 'tebex') {
 			try {
 				const request = await TebexAPI.getPaymentFromId(serverInfo.token, interaction.options.getString('id', true));
@@ -45,25 +49,25 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 					}
 					return interaction.reply({ embeds: [Embeds.transaction_tebex_embed(request)] })
 				}
-				return interaction.reply({ content: config.Locale.payment_not_found })
+				return interaction.reply({ content: messages[serverInfo.lang].payment_not_found })
 			} catch (err) {
 				console.error(err);
-				return interaction.reply({ content: config.command_error, ephemeral: true })
+				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 		} else {
 			let user = interaction.options.getString('user', false);
-			if(!user) return interaction.reply({content: config.Locale.user_required_craftingstore, ephemeral: true})
+			if(!user) return interaction.reply({content: messages[serverInfo.lang].user_required_craftingstore, ephemeral: true})
 			try {
 				const request = await CraftingstoreAPI.getPaymentByID(interaction.options.getString('user', true), interaction.options.getString('id', true), serverInfo.token, 1);
 				if (request === null) {
 
-					return interaction.reply({ content: config.Locale.payment_not_found })
+					return interaction.reply({ content: messages[serverInfo.lang].payment_not_found })
 				} else {
 					return interaction.reply({ embeds: [Embeds.transaction_craftingstore_embed(request)] })
 
 				}
 			} catch (err) {
-				return interaction.reply({ content: config.Locale.command_error + ". Probably an invalid Craftingstore token was provided", ephemeral: true })
+				return interaction.reply({ content: messages[serverInfo.lang].command_error + ". Probably an invalid Craftingstore token was provided", ephemeral: true })
 			}
 
 		}

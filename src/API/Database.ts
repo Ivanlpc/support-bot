@@ -1,6 +1,7 @@
 import mysql2 from 'mysql2';
 
-import { config } from  '..';
+import config from "../config.json";
+
 
 const pool = mysql2.createPool(config.Database);
 
@@ -17,6 +18,12 @@ pool.getConnection((err, conn) => {
     }
 })
 
+/**
+ * 
+ * @param query - SQL query you want to execute
+ * @param params - Params of the SQL query
+ * @returns Promise
+ */
 
 export const execute = <T>(query: string, params: string[] | Object): Promise<T> => {
     try {

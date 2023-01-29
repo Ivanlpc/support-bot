@@ -4,7 +4,8 @@ import {
 	Client,
 	ChatInputCommandInteraction
 } from 'discord.js';
-import { config } from '../..';
+import config from "../../config.json";
+
 import { Embeds } from '../../API/Util/Embeds';
 
 const data = new SlashCommandBuilder()

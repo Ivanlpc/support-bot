@@ -1,10 +1,11 @@
 import { ChatInputCommandInteraction, Client, SlashCommandSubcommandBuilder, GuildMember } from "discord.js";
-import { config } from "../../..";
+import config from "../../../config.json";
 import SubCommand from "../../../structures/Subcommand";
 import { getServerInformation } from "../../../API/Services/Guilds";
 import { TebexAPI } from "../../../API/External/TebexAPI";
-import { CraftingstoreAPI } from "../../../API/External/CraftingstoreAPI";
-import { Embeds } from "../../../API/Util/Embeds";
+
+const messages = require("../../../messages.json");
+
 
 const data = new SlashCommandSubcommandBuilder()
 	.setName(config.Commands.giftcard.subcommand.delete.name)
@@ -18,7 +19,7 @@ const data = new SlashCommandSubcommandBuilder()
 const execute = async (client: Client, interaction: ChatInputCommandInteraction) => {
 	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
 		const serverInfo = await getServerInformation(interaction.guildId);
-		if (serverInfo.setup === 0) return interaction.reply({ content: config.Locale.setup_not_done, ephemeral: true })
+		if (serverInfo.setup === 0) return interaction.reply({ content: messages[serverInfo.lang].setup_not_done, ephemeral: true })
 		if (serverInfo.type === 'tebex') {
 			try {
 				const request = await TebexAPI.deleteGiftcard(serverInfo.token, interaction.options.getString('id', true));
@@ -27,12 +28,12 @@ const execute = async (client: Client, interaction: ChatInputCommandInteraction)
 					return interaction.reply({content: "TEBEX: "+request.error_message, ephemeral: true});
 				}
 				if (request.data.void) {
-					return interaction.reply({ content: config.Locale.giftcard_deleted, ephemeral: false })
+					return interaction.reply({ content: messages[serverInfo.lang].giftcard_deleted, ephemeral: false })
 				}
 				
 			} catch (err) {
 				console.error(err);
-				return interaction.reply({ content: config.command_error, ephemeral: true })
+				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 		} else {
 
@@ -42,13 +43,13 @@ const execute = async (client: Client, interaction: ChatInputCommandInteraction)
 			// try {
 			// 	const request = await CraftingstoreAPI.deleteGiftcard(serverInfo.token, interaction.options.getString('id', true));
 			// 	if (!request.success) {
-			// 		return interaction.reply({ content: config.Locale.giftcard_not_found })
+			// 		return interaction.reply({ content: messages[serverInfo.lang].giftcard_not_found })
 			// 	} else {
-			// 		return interaction.reply({ content: config.Locale.giftcard_deleted, ephemeral: false });
+			// 		return interaction.reply({ content: messages[serverInfo.lang].giftcard_deleted, ephemeral: false });
 			// 	}
 			// } catch (err) {
 			// 	console.error(err);
-			// 	return interaction.reply({ content: config.command_error, ephemeral: true })
+			// 	return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			// }
 		}
 	}

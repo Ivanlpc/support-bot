@@ -5,11 +5,14 @@ import {
 	ChatInputCommandInteraction,
 	GuildMember
 } from 'discord.js';
-import { config } from '../..';
+import config from "../../config.json";
 import { create } from './subcommands/create';
 import { remove } from './subcommands/delete';
 import { recover } from './subcommands/recover';
 import { hasPermission } from '../../API/Services/Permissions';
+
+const messages = require("../../messages.json");
+
 
 const data = new SlashCommandBuilder()
 	.setName(config.Commands.giftcard.command_name)
@@ -24,7 +27,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
 		const allowed: boolean = await hasPermission(interaction.member, config.Commands.giftcard.command_name);
 		if (!allowed && interaction.options.getSubcommand() !== 'recover') {
-			return interaction.reply({ content: config.Locale.no_permission, ephemeral: true })
+			return interaction.reply({ content: messages.EN.no_permission, ephemeral: true })
 		}
 		if (interaction.options.getSubcommand() === 'create') {
 			try {
@@ -32,7 +35,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 
 			} catch (err) {
 				console.error(err);
-				return interaction.reply({ content: config.Locale.command_error, ephemeral: true })
+				return interaction.reply({ content: messages.EN.command_error, ephemeral: true })
 			}
 		} else if(interaction.options.getSubcommand() === 'delete') {
 			try {
@@ -40,7 +43,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 
 			} catch (err) {
 				console.error(err);
-				return interaction.reply({ content: config.Locale.command_error, ephemeral: true })
+				return interaction.reply({ content: messages.EN.command_error, ephemeral: true })
 			}
 		} else {
 			try {
@@ -48,7 +51,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 
 			} catch (err) {
 				console.error(err);
-				return interaction.reply({ content: config.Locale.command_error, ephemeral: true })
+				return interaction.reply({ content: messages.EN.command_error, ephemeral: true })
 			}
 		}
 	}

@@ -1,8 +1,9 @@
 import { EmbedBuilder } from "discord.js";
-import { config } from '../..';
+import config from "../../config.json";
 import { IPaymentFromID } from "../External/TebexAPI";
 import { IPayment } from "../External/CraftingstoreAPI";
 
+const messages = require("../../messages.json");
 
 export const Embeds = {
     select_store_embed: () => {
@@ -21,83 +22,83 @@ export const Embeds = {
                 "just change the token in your web panel or kick the bot from this server. \n" +
                 "When the bot is leaving a server, all the information is deleted from the database.")
             .setColor("#00FF00")
-            .setFooter({ text: config.Locale.Embeds.footer })
+            .setFooter({ text: messages.EN.footer })
     },
-    transaction_tebex_embed: (transaction: IPaymentFromID) => {
+    transaction_tebex_embed: (transaction: IPaymentFromID, lang = 'EN') => {
         const packages = transaction.packages.map(elem => elem.name);
         return new EmbedBuilder()
-            .setTitle(`Transaction: ${transaction.id}`)
-            .setDescription('Information:')
+            .setTitle(`${messages[lang].transaction}: ${transaction.id}`)
+            .setDescription(`${messages[lang].information}:`)
             .setThumbnail(config.TRANSACTION_AVATAR_URL + transaction.player.name)
             .addFields([
-                { name: "Player", value: transaction.player.name },
-                { name: "UUID: ", value: transaction.player.uuid.toString() },
-                { name: "Packages:", value: packages.join(',') },
-                { name: "Price: ", value: transaction.amount.toString() + transaction.currency.symbol },
-                { name: "Status: ", value: transaction.status }
+                { name: `${messages[lang].player}:`, value: transaction.player.name },
+                { name: `${messages[lang].uuid}:`, value: transaction.player.uuid.toString() },
+                { name: `${messages[lang].packages}:`, value: packages.join(',') },
+                { name: `${messages[lang].price}:`, value: transaction.amount.toString() + transaction.currency.symbol },
+                { name: `${messages[lang].status}`, value: transaction.status }
             ])
             .setColor(transaction.status !== 'Complete' ? 'Red' : 'Green')
-            .setFooter({ text: 'Using Tebex API' });
+            .setFooter({ text: 'Tebex API' });
     },
-    transaction_craftingstore_embed: (transaction: IPayment) => {
+    transaction_craftingstore_embed: (transaction: IPayment, lang = 'EN') => {
         return new EmbedBuilder()
-        .setTitle(`Transaction: ${transaction.transactionId}`)
-        .setDescription('Information:')
+        .setTitle(`${messages[lang].transaction}: ${transaction.transactionId}`)
+        .setDescription(`${messages[lang].information}:`)
         .setThumbnail(config.TRANSACTION_AVATAR_URL + transaction.inGameName)
         .addFields([
-            { name: "Player", value: transaction.inGameName },
-            { name: "UUID: ", value: transaction.uuid !== null ? transaction.uuid : 'None' },
-            { name: "Email: ", value: transaction.email ? transaction.email : 'No email provided' },
-            { name: "Packages:", value: transaction.packageName },
-            { name: "Price: ", value: transaction.price.toString() },
-            { name: "Gateway: ", value: transaction.gateway },
-            { name: "Status: ", value: transaction.status },
-            { name: "Fecha: ", value: new Date(transaction.timestamp * 1000).toLocaleDateString() }
+            { name: `${messages[lang].player}:`, value: transaction.inGameName },
+            { name: `${messages[lang].uuid}:`, value: transaction.uuid !== null ? transaction.uuid : 'None' },
+            { name: `${messages[lang].email}:`, value: transaction.email ? transaction.email : 'No email provided' },
+            { name: `${messages[lang].packages}:`, value: transaction.packageName },
+            { name: `${messages[lang].price}:`, value: transaction.price.toString() },
+            { name: `${messages[lang].gateway}:`, value: transaction.gateway },
+            { name: `${messages[lang].status}:`, value: transaction.status },
+            { name: `${messages[lang].date}:`, value: new Date(transaction.timestamp * 1000).toLocaleDateString() }
 
         ])
         .setColor(transaction.status !== 'PAID' ? 'Red' : 'Green')
-        .setFooter({ text: 'Using CraftingstoreAPI.' })
+        .setFooter({ text: 'Craftingstore API.' })
     },
-    help_embed: () => {
+    help_embed: (lang = 'EN') => {
         return new EmbedBuilder()
-        .setTitle('Showing help')
-        .setDescription('List of commands:')
+        .setTitle(`${messages[lang].showing_help}:`)
+        .setDescription(`${messages[lang].command_list}:`)
         .addFields(
-            {name: '/setup', value: "```Configurate the bot to use it in your server```"},
-            {name: '/perm (add/remove) (permission) (user/role)', value: "```Manage the permissions of this bot```"},
-            {name: '/search (id) (user)', value: "```Shows the purchase with that Transaction ID```"},
-            {name: '/payments (user)', value: "```Shows all purchases done with that username```"},
-            {name: '/giftcard create (amount)', value: "```Create a Giftcard with the amount provided```"},
-            {name: '/giftcard delete (id)', value: "```Delete the giftcard with that ID. [TEBEX ONLY]```"},
-            {name: '/ban', value: "```Bans a player from buying in the shop. [TEBEX ONLY]```"},
+            {name: '/setup', value: "```"+messages[lang].setup+"```"},
+            {name: '/perm (add/remove) (permission) (user/role)', value: "```"+messages[lang].perm+"```"},
+            {name: '/search (id) (user)', value: "```"+messages[lang].search+"```"},
+            {name: '/payments (user)', value: "```"+messages[lang].payments+"```"},
+            {name: '/giftcard create (amount)', value: "```"+messages[lang].giftcard_create+"```"},
+            {name: '/giftcard delete (id)', value: "```"+messages[lang].giftcard_delete+"```"},
+            {name: '/ban', value: "```"+messages[lang].ban+"```"},
 
 
 
         ).setFooter({
-            text: config.Locale.Embeds.footer
+            text: messages[lang].footer
         })
         .setColor("#2F3136")
     },
-    giftcard_embed: (code: string, amount: string, id: string, user: string | undefined,  currency: string | undefined) => {
+    giftcard_embed: (code: string, amount: string, id: string, lang = 'EN', user?: string,  currency?: string) => {
         return new EmbedBuilder()
-        .setTitle(`Giftcard Created ID: ${id}`)
-        .setDescription('Here is the information:')
+        .setTitle(`${messages[lang].giftcard_created}: ${id}`)
+        .setDescription(`${messages[lang].information}:`)
         .addFields(
-            {name: 'Code: ', value: "```" + code + "```"},
-            {name: 'Amount: ', value: "```" + amount + " " + (currency ? currency : "") + "```"},
+            {name: `${messages[lang].code}:`, value: "```" + code + "```"},
+            {name: `${messages[lang].amount}:`, value: "```" + amount + " " + (currency ? currency : "") + "```"},
         )
         .setColor("Green")
     },
-    ban_embed: (user: string, reason: string, id: string, ip: string | undefined) => {
+    ban_embed: (user: string, reason: string, id: string, lang = 'EN', ip?: string) => {
         const embed =  new EmbedBuilder()
-        .setTitle(`Ban created ID: ${id}`)
-        .setDescription('Information:')
+        .setTitle(`${messages[lang].ban_created}: ${id}`)
+        .setDescription(`${messages[lang].information}:`)
         .addFields(
-            {name: 'Username: ', value: "```" + user + "```"})
+            {name: `${messages[lang].username}:`, value: "```" + user + "```"})
         
         .setTimestamp()
-        if(ip) embed.addFields({name: 'IP: ', value: "```" + ip + "```"})
-        embed.addFields({name: 'Reason: ', value: "```" + reason + "```"})
+        if(ip) embed.addFields({name: `${messages[lang].ip}:`, value: "```" + ip + "```"})
+        embed.addFields({name: `${messages[lang].reason}:`, value: "```" + reason + "```"})
         .setColor('Red')
         return embed;
     }

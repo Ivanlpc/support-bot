@@ -6,12 +6,16 @@ import {
 	GuildMember,
 
 } from 'discord.js';
-import { config } from '../..';
+import config from "../../config.json";
 import { getCommandChoices, addPermission, removePermission } from '../../API/Services/Permissions';
 import { hasPermission } from '../../API/Services/Permissions';
 
+
+
 module.exports = (async function () {
 	const perms = await getCommandChoices();
+
+	const messages = require("../../messages.json");
 
 	const data = new SlashCommandBuilder()
 		.setName(config.Commands.perm.command_name)
@@ -49,30 +53,30 @@ module.exports = (async function () {
 		if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
 			const allowed: boolean = await hasPermission(interaction.member, config.Commands.perm.command_name);
 			if (!allowed) {
-				return interaction.reply({ content: config.Locale.no_permission, ephemeral: true })
+				return interaction.reply({ content: messages.EN.no_permission, ephemeral: true })
 			}
 			if (interaction.options.getSubcommand() === 'add') {
 				try {
 					const request = await addPermission(interaction.guildId, interaction.options.getMentionable('id', true).valueOf().toString(), interaction.options.getInteger('perm', true));
 					if (request) {
-						interaction.reply({ content: 'Permission added!' })
+						interaction.reply({ content: 'Permission added!', ephemeral: true })
 					} else {
-						interaction.reply({ content: 'That user/role already has that permission' }) //Already in DB
+						interaction.reply({ content: 'That user/role already has that permission', ephemeral: true }) //Already in DB
 					}
 				} catch (err) {
-					interaction.reply({ content: config.Locale.setup_not_done, ephemeral: true })
+					interaction.reply({ content: messages.EN.setup_not_done, ephemeral: true })
 				}
 
 			} else {
 				try {
 					const request = await removePermission(interaction.guildId, interaction.options.getMentionable('id', true).valueOf().toString(), interaction.options.getInteger('perm', true));
 					if (request) {
-						interaction.reply({ content: 'Permission removed!' })
+						interaction.reply({ content: 'Permission removed!', ephemeral: true })
 					} else {
-						interaction.reply({ content: 'That user/role does not have permission' }) //Not in DB
+						interaction.reply({ content: 'That user/role does not have permission', ephemeral: true }) //Not in DB
 					}
 				} catch (err) {
-					interaction.reply({ content: config.Locale.setup_not_done, ephemeral: true })
+					interaction.reply({ content: messages.EN.setup_not_done, ephemeral: true })
 				}
 			}
 		}

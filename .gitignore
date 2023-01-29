@@ -3,6 +3,7 @@ node_modules
 /Shopy
 prod.config.yml
 .env
+config.json
 package-lock.json
 src/tests
 /src/config.yml
