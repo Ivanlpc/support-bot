@@ -1,6 +1,6 @@
-import config from "../../config.json";
-
 import { request } from "../Requests";
+
+const config = require("../../../config.json");
 
 /**
  * Build Headers to make a request

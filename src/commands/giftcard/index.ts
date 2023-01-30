@@ -5,13 +5,13 @@ import {
 	ChatInputCommandInteraction,
 	GuildMember
 } from 'discord.js';
-import config from "../../config.json";
 import { create } from './subcommands/create';
 import { remove } from './subcommands/delete';
 import { recover } from './subcommands/recover';
 import { hasPermission } from '../../API/Services/Permissions';
 
-const messages = require("../../messages.json");
+const config = require("../../../config.json");
+const messages = require("../../../messages.json");
 
 
 const data = new SlashCommandBuilder()

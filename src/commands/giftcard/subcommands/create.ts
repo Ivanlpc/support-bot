@@ -1,12 +1,12 @@
 import { ChatInputCommandInteraction, Client, SlashCommandSubcommandBuilder, GuildMember } from "discord.js";
-import config from "../../../config.json";
 import SubCommand from "../../../structures/Subcommand";
 import { getServerInformation } from "../../../API/Services/Guilds"; 
 import { TebexAPI } from "../../../API/External/TebexAPI";
 import { CraftingstoreAPI } from "../../../API/External/CraftingstoreAPI";
 import { Embeds } from "../../../API/Util/Embeds";
 
-const messages = require("../../../messages.json");
+const config = require("../../../../config.json");
+const messages = require("../../../../messages.json");
 
 
 const data = new SlashCommandSubcommandBuilder()

@@ -6,16 +6,15 @@ import {
 	GuildMember,
 
 } from 'discord.js';
-import config from "../../config.json";
 import { getCommandChoices, addPermission, removePermission } from '../../API/Services/Permissions';
 import { hasPermission } from '../../API/Services/Permissions';
 
 
-
 module.exports = (async function () {
 	const perms = await getCommandChoices();
-
-	const messages = require("../../messages.json");
+	
+	const config = require("../../../config.json");
+	const messages = require("../../../messages.json");
 
 	const data = new SlashCommandBuilder()
 		.setName(config.Commands.perm.command_name)

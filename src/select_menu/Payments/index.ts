@@ -5,7 +5,7 @@ import { getServerInformation } from "../../API/Services/Guilds";
 import { TebexAPI } from "../../API/External/TebexAPI";
 import { CraftingstoreAPI } from "../../API/External/CraftingstoreAPI";
 
-const messages = require("../../messages.json");
+const messages = require("../../../messages.json");
 
 const name = 'payments'
 

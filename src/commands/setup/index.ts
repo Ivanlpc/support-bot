@@ -12,11 +12,11 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder
 } from 'discord.js';
-import config from "../../config.json";
 import { Embeds } from '../../API/Util/Embeds';
 import { newGuild, updateToken } from '../../API/Services/Guilds';
 
-const messages = require("../../messages.json");
+const config = require("../../../config.json");
+const messages = require("../../../messages.json");
 
 
 const data = new SlashCommandBuilder()

@@ -1,9 +1,10 @@
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import { ActivityType } from 'discord.js';
-import config from "../config.json";
 import Event from '../structures/Event';
 import Bot from '../structures/Bot';
+
+const config = require("../../config.json");
 
 const event = new Event('ready', async (client): Promise<void> => {
 

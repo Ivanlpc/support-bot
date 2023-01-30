@@ -2,7 +2,9 @@ import { execute } from "../Database";
 import { Queries } from "../Queries";
 import { OkPacket } from "mysql2";
 import { GuildMember } from "discord.js";
-import config from "../../config.json";
+
+const config = require("../../../config.json");
+
 
 /**
  * Get all IDs that has the given permission node on that discord server

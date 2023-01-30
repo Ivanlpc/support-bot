@@ -9,14 +9,14 @@ import {
 	ButtonBuilder,
 	ButtonStyle
 } from 'discord.js';
-import config from "../../config.json";
 import { hasPermission } from '../../API/Services/Permissions';
 
 import { getServerInformation } from '../../API/Services/Guilds';
 import { TebexAPI } from '../../API/External/TebexAPI';
 import { CraftingstoreAPI } from '../../API/External/CraftingstoreAPI';
 
-const messages = require("../../messages.json");
+const config = require("../../../config.json");
+const messages = require("../../../messages.json");
 
 
 const button = new ActionRowBuilder<ButtonBuilder>().addComponents(

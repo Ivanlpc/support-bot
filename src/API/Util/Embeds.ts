@@ -1,9 +1,9 @@
 import { EmbedBuilder } from "discord.js";
-import config from "../../config.json";
 import { IPaymentFromID } from "../External/TebexAPI";
 import { IPayment } from "../External/CraftingstoreAPI";
 
-const messages = require("../../messages.json");
+const config = require("../../../config.json");
+const messages = require("../../../messages.json");
 
 export const Embeds = {
     select_store_embed: () => {

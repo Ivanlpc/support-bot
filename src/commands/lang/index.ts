@@ -5,10 +5,10 @@ import {
     ChatInputCommandInteraction,
     GuildMember
 } from 'discord.js';
-import config from "../../config.json";
 import { changeLanguage, getServerInformation } from '../../API/Services/Guilds';
 
-const messages = require("../../messages.json");
+const config = require("../../../config.json");
+const messages = require("../../../messages.json");
 
 
 const languages : ILanguages[] = new Array();

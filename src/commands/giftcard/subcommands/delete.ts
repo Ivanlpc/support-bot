@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, Client, SlashCommandSubcommandBuilder, GuildMember } from "discord.js";
-import config from "../../../config.json";
 import SubCommand from "../../../structures/Subcommand";
 import { getServerInformation } from "../../../API/Services/Guilds";
 import { TebexAPI } from "../../../API/External/TebexAPI";
 
-const messages = require("../../../messages.json");
+const config = require("../../../../config.json");
+const messages = require("../../../../messages.json");
 
 
 const data = new SlashCommandSubcommandBuilder()

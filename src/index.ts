@@ -2,8 +2,8 @@ import path from 'path';
 import fs from 'fs';
 import Bot from "./structures/Bot";
 import { unhandledRejection, uncaughtException } from './API/Proccess';
-import config from "./config.json";
 
+const config = require("../config.json");
 const TOKEN: string = config.TOKEN;
 
 export const client = new Bot();

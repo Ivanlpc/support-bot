@@ -10,13 +10,14 @@ import {
     TextInputStyle,
     ActionRowBuilder
 } from 'discord.js';
-import config from "../../config.json";
+
 import { hasPermission } from '../../API/Services/Permissions';
 import { Embeds } from '../../API/Util/Embeds';
 import { getServerInformation } from '../../API/Services/Guilds';
 import { TebexAPI } from '../../API/External/TebexAPI';
 
-const messages = require("../../messages.json");
+const config = require("../../../config.json");
+const messages = require("../../../messages.json");
 
 
 

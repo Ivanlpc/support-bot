@@ -1,5 +1,6 @@
 import crypto from 'crypto';
-import config from "../../config.json";
+
+const config = require("../../../config.json");
 
 /**
  * 

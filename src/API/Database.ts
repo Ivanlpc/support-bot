@@ -1,6 +1,6 @@
 import mysql2 from 'mysql2';
 
-import config from "../config.json";
+const config = require("../../config.json");
 
 
 const pool = mysql2.createPool(config.Database);
