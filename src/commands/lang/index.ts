@@ -31,7 +31,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
     if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
         const serverInfo = await getServerInformation(interaction.guildId);
 		if (serverInfo.setup === 0) return interaction.reply({ content: messages[serverInfo.lang].setup_not_done, ephemeral: true })
-        //if (interaction.user.id !== interaction.guild?.ownerId) return interaction.reply({ content: messages[serverInfo.lang].server_owner, ephemeral: true });
+        if (interaction.user.id !== interaction.guild?.ownerId) return interaction.reply({ content: messages[serverInfo.lang].server_owner, ephemeral: true });
         const language: string = interaction.options.getString('language', true);
         const change = await changeLanguage(interaction.guildId, language);
         if (change) return interaction.reply({content: messages[language].language_changed, ephemeral: true})
