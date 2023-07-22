@@ -9,5 +9,6 @@ export const Queries = {
     NewPermission: `INSERT IGNORE INTO permissions (guildId, id, permission_node) VALUES (?, ?, ?)`,
     RemovePermission: `DELETE FROM permissions WHERE guildId =? AND id=? AND permission_node =?`,
     GetGuildData: `SELECT setup, token, type, hash, lang FROM guilds WHERE id = ?`,
-    UpdateLanguage: `UPDATE guilds SET lang = ? WHERE id = ?`
+    UpdateLanguage: `UPDATE guilds SET lang = ? WHERE id = ?`,
+    GetLastNickname: `SELECT lastNickname FROM user_profiles WHERE premiumId = ? OR uniqueId = ?`
 }

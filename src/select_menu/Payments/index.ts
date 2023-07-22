@@ -25,7 +25,7 @@ const execute = async (client: Client, interaction: StringSelectMenuInteraction)
         if (request === null) {
             await interaction.message.edit({ content: messages[serverInfo.lang].payment_not_found, embeds: [], components: [...interaction.message.components] })
         } else {
-            await interaction.message.edit({ content: '', embeds: [Embeds.transaction_craftingstore_embed(request)], components: [...interaction.message.components] })
+            await interaction.message.edit({ content: '', embeds: [Embeds.transaction_craftingstore_embed(request, serverInfo.lang)], components: [...interaction.message.components] })
         }
     } else if (interaction.customId === 'payments;TB') {
         interaction.deferUpdate();
@@ -40,7 +40,7 @@ const execute = async (client: Client, interaction: StringSelectMenuInteraction)
         if (Array.isArray(request)) {
             await interaction.message.edit({ content: messages[serverInfo.lang].payment_not_found, embeds: [], components: [...interaction.message.components] })
         } else {
-            await interaction.message.edit({ content: '', embeds: [Embeds.transaction_tebex_embed(request)], components: [...interaction.message.components] })
+            await interaction.message.edit({ content: '', embeds: [Embeds.transaction_tebex_embed(request, serverInfo.lang)], components: [...interaction.message.components] })
         }
     }
 

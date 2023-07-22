@@ -1,5 +1,5 @@
-import Event from '../structures/Event';
-import { newGuild } from '../API/Services/Guilds';
+import Event from '../../structures/Event';
+import { newGuild } from '../../API/Services/Guilds';
 import { Guild } from 'discord.js';
 
 const event = new Event('guildCreate', async (guild : Guild): Promise<void> => {

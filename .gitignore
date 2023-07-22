@@ -8,3 +8,5 @@ package-lock.json
 src/tests
 /src/config.yml
 logs.txt
+errors.txt
+dist

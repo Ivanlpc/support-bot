@@ -151,7 +151,7 @@ export interface IPayment {
     inGameName: string,
     uuid: string | null
     email: string,
-    notes: string
+    notes: string | null
     gateway: string
     status: string
     timestamp: number

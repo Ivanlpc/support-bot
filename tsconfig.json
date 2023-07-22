@@ -3,11 +3,12 @@
     "target": "ES6",
     "module": "CommonJS",
     "rootDir": "./src",
-    "outDir": "./build",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+  },
+  "exclude": ["src/**/*.test.ts"]
 }

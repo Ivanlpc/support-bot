@@ -1,8 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import Bot from "./structures/Bot";
+import Logger from './API/Util/Logger';
+import Events2 from "./events/V2";
 import { unhandledRejection, uncaughtException } from './API/Proccess';
-
 const config = require("../config.json");
 const TOKEN: string = config.TOKEN;
 
@@ -12,13 +13,13 @@ process.on('unhandledRejection', unhandledRejection);
 process.on('uncaughtException', uncaughtException);
 
 //Import events
-const eventsPath: string = path.join(__dirname, 'events');
+const eventsPath: string = path.join(__dirname, 'events/DiscordV1');
 const eventsFile: string[] = fs.readdirSync(eventsPath);
 for (const file of eventsFile) {
 	let filePath = path.join(eventsPath, file);
 	let { event } = require(filePath);
 	client.on(event.getName(), event.execute);
-	console.log("\u001b[32m", `[✔] Loaded ${event.getName()} Event`, "\u001b[0m")
+	Logger.info("\u001b[32m", `[✔] Loaded ${event.getName()} Event`, "\u001b[0m")
 }
 
 //Import commands
@@ -32,13 +33,15 @@ if (commandsFile.length > 0) {
 			if (command.getEnabled()) {
 				client.pushCommand(command.getData().name, command)
 				client.pushRestCommand(command.getData().toJSON());
-				console.log("\u001b[32m", `[✔] Loaded /${command.getData().name} command`, "\u001b[0m")
+				Logger.info("\u001b[32m", `[✔] Loaded /${command.getData().name} command`, "\u001b[0m")
 			} else {
-				console.log("\x1b[31m", `[X] Disabled /${command.getData().name} command`, "\u001b[0m")
+				Logger.info("\x1b[31m", `[X] Disabled /${command.getData().name} command`, "\u001b[0m")
 			}
 		})();
 	}
 }
+
+
 
 //Import select menus
 const menusPath: string = path.join(__dirname, 'select_menu');
@@ -48,8 +51,11 @@ for(const file of menusFile){
 	let { select_menu } = require(filePath);
 	if(select_menu){
 		client.pushSelectmenu(select_menu.customId, select_menu);
-		console.log("\u001b[32m", `[✔] Loaded ${select_menu.customId} Select-Menu`, "\u001b[0m")
+		Logger.info("\u001b[32m", `[✔] Loaded ${select_menu.customId} Select-Menu`, "\u001b[0m")
 	}
 }
+Events2()
+	.then(() => Logger.info('Handling events...'))
+	.catch(err => Logger.error(err));
 
 client.login(TOKEN)

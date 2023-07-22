@@ -23,7 +23,7 @@
     "player": "Player",
     "uuid": "UUID",
     "packages": "Packages",
-    "prices": "Price",
+    "price": "Price",
     "status": "Status",
     "gateway": "Gateway",
     "email": "Email",
@@ -43,6 +43,8 @@
     "username": "Username",
     "ip": "IP",
     "reason": "Reason",
+    "select_transaction": "SELECT TRANSACTION",
+    "close": "CLOSE",
     "footer": "Developed by github.com/ivanlpc"
   },
   "ES": {
@@ -69,7 +71,7 @@
     "player": "Jugador",
     "uuid": "UUID",
     "packages": "Paquetes",
-    "prices": "Precio",
+    "price": "Precio",
     "status": "Estado",
     "gateway": "Método",
     "email": "Correo",
@@ -89,6 +91,8 @@
     "username": "Usuario",
     "ip": "IP",
     "reason": "Razón",
+    "select_transaction": "SELCCIONA TRANSACCIÓN",
+    "close": "CERRAR",
     "footer": "Desarrollado por github.com/ivanlpc"
   }
   

@@ -1,3 +1,4 @@
+import Logger from "./Util/Logger";
 /**
  * 
  * @param input - URL you want to request
@@ -14,7 +15,7 @@ export const request = <T>(input: RequestInfo | URL, init?: RequestInit | undefi
       });
   
     } catch (error) {
-      console.error('[request][Error]: ', error);
+      Logger.error('[request][Error]: ', error);
       throw new Error('failed to request API');
     }
   }

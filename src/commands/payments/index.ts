@@ -54,18 +54,24 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				return interaction.reply({ content: "TEBEX: "+request.error_message, ephemeral: true })
 			}
 			if (request.payments.length === 0) {
-				console.log(serverInfo)
 				return interaction.reply({ content: messages[serverInfo.lang].no_payments_found, ephemeral: true })
 			}
 
-			const transactions = request.payments.map(elem => ({ 
+			const transactions = request.payments.slice(0, 25).map(elem => ({ 
 				label: 'ID: ' + elem.txn_id + ' - ' + new Date(elem.time * 1000).toLocaleDateString(), 
 				value: elem.txn_id 
 			}));
+			let button = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+				.setCustomId('close')
+				.setLabel(messages[serverInfo.lang].close)
+				.setEmoji('❌')
+				.setStyle(ButtonStyle.Primary)
+			)
 			let select_menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setCustomId('payments;TB')
-					.setPlaceholder('SELECT TRANSACTION')
+					.setPlaceholder(messages[serverInfo.lang].select_transaction)
 					.addOptions(...transactions))
 			return interaction.reply({ components: [select_menu, button] })
 		}
@@ -78,13 +84,20 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 			return interaction.reply({ content: messages[serverInfo.lang].no_payments_found })
 		}
 		const transactions = request.data.map(elem => ({
-			label: (elem.packageName.length > 35 ? elem.packageName.substring(0, 35) + '...' : elem.packageName) + ' - ' + new Date(elem.timestamp * 1000).toLocaleDateString(),
+			label: (elem.packageName.length > 25 ? elem.packageName.substring(0, 25) + '...' : elem.packageName) + ' - ' + new Date(elem.timestamp * 1000).toLocaleDateString(),
 			value: elem.inGameName + ';' + elem.transactionId
 		}))
+		let button = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+			.setCustomId('close')
+			.setLabel(messages[serverInfo.lang].close)
+			.setEmoji('❌')
+			.setStyle(ButtonStyle.Primary)
+		)
 		let select_menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId('payments;CS')
-				.setPlaceholder('SELECT TRANSACTION')
+				.setPlaceholder(messages[serverInfo.lang].select_transaction)
 				.addOptions(...transactions));
 		await interaction.reply({ components: [select_menu, button] });
 	}

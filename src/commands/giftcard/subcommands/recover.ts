@@ -6,6 +6,7 @@ import { ChatInputCommandInteraction,
 	StringSelectMenuBuilder
 } from "discord.js";
 import SubCommand from "../../../structures/Subcommand";
+import Logger from "../../../API/Util/Logger";
 import { getServerInformation } from "../../../API/Services/Guilds"; 
 import { TebexAPI } from "../../../API/External/TebexAPI";
 
@@ -38,7 +39,8 @@ const execute = async(client: Client, interaction: ChatInputCommandInteraction) 
 						.addOptions(...giftcards));
 				return interaction.reply({ components: [select_menu], ephemeral: true})
 			} catch (err) {
-				console.error(err);
+				Logger.error("ERROR TebexAPI recoverGiftcard promise", err);
+
 				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 		} else {

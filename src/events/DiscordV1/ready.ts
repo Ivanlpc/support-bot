@@ -1,10 +1,11 @@
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import { ActivityType } from 'discord.js';
-import Event from '../structures/Event';
-import Bot from '../structures/Bot';
+import Event from '../../structures/Event';
+import Bot from '../../structures/Bot';
+import Logger from '../../API/Util/Logger';
 
-const config = require("../../config.json");
+const config = require("../../../config.json");
 
 const event = new Event('ready', async (client): Promise<void> => {
 
@@ -22,7 +23,7 @@ const event = new Event('ready', async (client): Promise<void> => {
                         }
                     );
 
-                    console.log('All commands has been registered');
+                    Logger.info('All commands has been registered');
 
                 } catch (error) {
                     if (error) console.error(error);
@@ -30,7 +31,7 @@ const event = new Event('ready', async (client): Promise<void> => {
 
             }
         }
-        console.log(`Logged as ${client.user?.tag}`);
+        Logger.info(`Logged as ${client.user?.tag}`);
         client.user?.setActivity('/help', { type: ActivityType.Playing })
     }
 })

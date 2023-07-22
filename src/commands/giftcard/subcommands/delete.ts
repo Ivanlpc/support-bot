@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, Client, SlashCommandSubcommandBuilder, Gui
 import SubCommand from "../../../structures/Subcommand";
 import { getServerInformation } from "../../../API/Services/Guilds";
 import { TebexAPI } from "../../../API/External/TebexAPI";
+import Logger from "../../../API/Util/Logger";
 
 const config = require("../../../../config.json");
 const messages = require("../../../../messages.json");
@@ -32,7 +33,8 @@ const execute = async (client: Client, interaction: ChatInputCommandInteraction)
 				}
 				
 			} catch (err) {
-				console.error(err);
+				Logger.error("ERROR TebexAPI deleteGiftcard promise: ", err);
+
 				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 		} else {

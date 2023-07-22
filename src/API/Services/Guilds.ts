@@ -1,4 +1,4 @@
-import { execute } from "../Database"
+import { execute, HydraBot } from "../Database"
 import { encrypt, decrypt } from "../Util/Crypto";
 import { Queries } from "../Queries"
 import { OkPacket } from "mysql2";
@@ -12,7 +12,7 @@ import { OkPacket } from "mysql2";
  *
  */
 export const newGuild = async (guildId: string | null, name: string | undefined): Promise<boolean> => {
-    const query: OkPacket = await execute(Queries.NewGuild, [guildId, name]);
+    const query: OkPacket = await execute(HydraBot, Queries.NewGuild, [guildId, name]);
     return query.affectedRows > 0;
 }
 
@@ -24,7 +24,7 @@ export const newGuild = async (guildId: string | null, name: string | undefined)
  *
  */
 export const leaveGuild = async (guildId: string): Promise<boolean> => {
-    const query: OkPacket = await execute(Queries.LeaveGuild, [guildId]);
+    const query: OkPacket = await execute(HydraBot, Queries.LeaveGuild, [guildId]);
     return query.affectedRows > 0;
 }
 
@@ -40,7 +40,7 @@ export const leaveGuild = async (guildId: string): Promise<boolean> => {
 
 export const updateToken = async (guildId: string | null, tkn: string, store: string | null): Promise<boolean> => {
     const { token, iv } = encrypt(tkn);
-    const query: OkPacket = await execute(Queries.UpdateToken, [token, iv, store, guildId]);
+    const query: OkPacket = await execute(HydraBot, Queries.UpdateToken, [token, iv, store, guildId]);
     return query.affectedRows > 0;
 }
 
@@ -56,7 +56,7 @@ export const updateToken = async (guildId: string | null, tkn: string, store: st
  */
 
 export const getTokenByGuild = async (guildId: string) => {
-    const res = await execute<IToken[]>(Queries.GetToken, [guildId]);
+    const res = await execute<IToken[]>(HydraBot, Queries.GetToken, [guildId]);
 
     const token = decrypt(res[0].token, res[0].hash);
     return {
@@ -72,7 +72,7 @@ export const getTokenByGuild = async (guildId: string) => {
  *
  */
 export const getServerInformation = async (guildId: string): Promise<IServer> => {
-    const info = await execute<IGuilds[]>(Queries.GetGuildData, [guildId]);
+    const info = await execute<IGuilds[]>(HydraBot, Queries.GetGuildData, [guildId]);
     if (info.length <= 0 || info[0].setup === 0) return {
         setup: 0,
         token: '',
@@ -97,7 +97,7 @@ export const getServerInformation = async (guildId: string): Promise<IServer> =>
  *
  */
 export const changeLanguage = async (guildId: string, language: string): Promise<boolean> => {
-    const res: OkPacket = await execute(Queries.UpdateLanguage, [language, guildId]);
+    const res: OkPacket = await execute(HydraBot, Queries.UpdateLanguage, [language, guildId]);
     if (res.affectedRows > 0) return true;
     return false;
 }

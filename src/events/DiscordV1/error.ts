@@ -1,7 +1,7 @@
-import Event from "../structures/Event";
+import Event from "../../structures/Event";
 import fs from 'fs';
 
-const botVersion = require('../../package.json');
+const botVersion = require('../../../package.json');
 
 const event = new Event('error', async (error: Error) => {
   console.log(error);

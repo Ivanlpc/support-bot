@@ -1,8 +1,9 @@
-import Event from '../structures/Event';
-import { client } from "..";
+import Event from '../../structures/Event';
+import Logger from '../../API/Util/Logger';
+import { client } from "../..";
 import { BaseInteraction } from 'discord.js';
 
-const messages = require("../../messages.json");
+const messages = require("../../../messages.json");
 
 
 const event = new Event('interactionCreate', async (interaction: BaseInteraction): Promise<void> => {
@@ -13,7 +14,10 @@ const event = new Event('interactionCreate', async (interaction: BaseInteraction
         try {
             await command.execute(client, interaction);
         } catch (e) {
-            console.log(e)
+
+            let data = command.getData() as any;
+            Logger.error("Error while executing chat command: ", data.name, e)
+
             interaction.reply({
                 content: messages.EN.command_error,
                 ephemeral: true
@@ -27,7 +31,6 @@ const event = new Event('interactionCreate', async (interaction: BaseInteraction
         try {
             await select_menu.execute(client, interaction);
         } catch (e) {
-            console.log(e)
             interaction.reply({
                 content: messages.EN.command_error,
                 ephemeral: true

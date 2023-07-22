@@ -11,6 +11,7 @@ import { getServerInformation } from '../../API/Services/Guilds';
 import { TebexAPI } from '../../API/External/TebexAPI';
 import { CraftingstoreAPI } from '../../API/External/CraftingstoreAPI';
 import { Embeds } from '../../API/Util/Embeds';
+import Logger from '../../API/Util/Logger';
 
 const config = require("../../../config.json");
 const messages = require("../../../messages.json");
@@ -47,11 +48,11 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 					if (request.error_code) {
 						return interaction.reply({ content: "TEBEX: "+request.error_message, ephemeral: true })
 					}
-					return interaction.reply({ embeds: [Embeds.transaction_tebex_embed(request)] })
+					return interaction.reply({ embeds: [Embeds.transaction_tebex_embed(request, serverInfo.lang)] })
 				}
 				return interaction.reply({ content: messages[serverInfo.lang].payment_not_found })
 			} catch (err) {
-				console.error(err);
+				Logger.error("Error while TebexAPI getPaymentFromId in search command");
 				return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
 			}
 		} else {
@@ -63,7 +64,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 
 					return interaction.reply({ content: messages[serverInfo.lang].payment_not_found })
 				} else {
-					return interaction.reply({ embeds: [Embeds.transaction_craftingstore_embed(request)] })
+					return interaction.reply({ embeds: [Embeds.transaction_craftingstore_embed(request, serverInfo.lang)] })
 
 				}
 			} catch (err) {

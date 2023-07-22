@@ -1,6 +1,8 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, roleMention } from "discord.js";
 import { IPaymentFromID } from "../External/TebexAPI";
 import { IPayment } from "../External/CraftingstoreAPI";
+import { ILitebansBans, IAction } from "../../events/V2/types";
+
 
 const config = require("../../../config.json");
 const messages = require("../../../messages.json");
@@ -101,5 +103,92 @@ export const Embeds = {
         embed.addFields({name: `${messages[lang].reason}:`, value: "```" + reason + "```"})
         .setColor('Red')
         return embed;
+    },
+    unban_embed: (data: { after: ILitebansBans, before: ILitebansBans }, unban: boolean, name: string, schema: string) => {
+        return new EmbedBuilder()
+            .setTitle('NUEVO DESBANEO')
+            .setDescription('Informacion')
+            .setColor(unban ? 'Green' : 'Red')
+            .setThumbnail(config.TRANSACTION_AVATAR_URL + name)
+            .addFields(
+                { name: 'UUID:', value: data.after.uuid },
+                { name: 'Nombre: ', value: name },
+                { name: 'Desbaneado por:', value: data.after.removed_by_name },
+                { name: 'Razón:', value: data.before.reason },
+                { name: 'Razón de desbaneo:', value: data.after.removed_by_reason },
+                { name: 'DESBANEO en su ultima compra (anterior a 1h):', value: unban.toString() },
+                { name: 'Schema', value: schema}
+            )
+    },
+    unmute_embed: (data: ILitebansBans, unban: boolean, name: string, schema: string) => {
+        return new EmbedBuilder()
+            .setTitle('NUEVO DESMUTEO')
+            .setDescription('Informacion')
+            .setColor(unban ? 'Green' : 'Red')
+            .setThumbnail(config.TRANSACTION_AVATAR_URL + name)
+            .addFields(
+                { name: 'UUID:', value: data.uuid },
+                { name: 'Nombre: ', value: name },
+                { name: 'Desmuteado por:', value: data.removed_by_name },
+                { name: 'Razón:', value: data.reason },
+                { name: 'Razón de desbaneo:', value: data.removed_by_reason },
+                { name: 'Ha comprado DESMUTEO en su ultima compra:', value: unban.toString() },
+                { name: 'Schema', value: schema}
+            )
+    },
+    delete_action_embed: (data: IAction, schema: string) => {
+        return new EmbedBuilder()
+            .setTitle('SE HAN BORRADO LOGS DE ACCIONES')
+            .setDescription('Información')
+            .setColor('Red')
+            .addFields(
+                { name: 'Tipo (U = usuario, G = rango)', value: data.type },
+                { name: 'Comando de luckperms ejecutado por:', value: data.actor_name },
+                { name: 'UUID del que lo ejecuta:', value: data.actor_uuid },
+                { name: 'Ejecutado el:', value: new Date(Number.parseInt(data.time) * 1000).toLocaleDateString() },
+                { name: 'Usuario sobre el que se ejecutó el comando:', value: data.acted_name },
+                { name: 'Acción realizada: ', value: data.action },
+                { name: 'Schema', value: schema}
+            )
+    },
+    new_rank_embed: (uuid: string, rank: string,tienda: boolean, name: string, schema: string, value: boolean, temp? : boolean) => {
+        const embed =  new EmbedBuilder()
+            .setTitle('NUEVO RANGO / PERMISO')
+            .setDescription('Información')
+            .setColor(tienda ? 'Green' : 'Red')
+            .setThumbnail(config.TRANSACTION_AVATAR_URL + name)
+            .addFields(
+                { name: 'UUID:', value: uuid },
+                { name: 'Nick:', value: name},
+                { name: 'Rango o permiso: ', value: rank },
+                { name: 'Su última compra (anterior a 1 día) coincide con el rango:', value: tienda.toString() },
+                { name: 'Schema', value: schema},
+                { name: "Valor:", value: value ? 'True' : 'False'}
+            )
+            if(temp) embed.addFields({ name: "Permanente:", value: temp.toString()})
+            return embed;
+    },
+    delete_ban_embed: (data: ILitebansBans, name: string, schema: string) => {
+        const embed = new EmbedBuilder()
+            .setTitle('SANCIÓN ELIMINADA')
+            .setDescription('Informacion')
+            .setColor('Red')
+            .setThumbnail(config.TRANSACTION_AVATAR_URL + name)
+            .addFields(
+                { name: 'UUID:', value: data.uuid },
+                { name: 'Nombre: ', value: name},
+                { name: 'Baneado por:', value: data.banned_by_name },
+                { name: 'Razón:', value: data.reason },
+                { name: 'Fecha:', value: new Date(data.time).toLocaleDateString()},
+                { name: 'Expira en:', value: data.until != -1 ? new Date(data.until).toLocaleDateString() : 'Permanente'},
+                { name: 'Baneo de ip:', value: data.ipban.toString()},
+                { name: 'Schema', value: schema}
+            )
+            if(data.removed_by_name !== null) embed.addFields(
+                {name: "Desbaneado por:", value: data.removed_by_name },
+                {name: 'Motivo del unban:', value: data.removed_by_reason || 'Ninguno'}
+            )
+            return embed;
+
     }
 }

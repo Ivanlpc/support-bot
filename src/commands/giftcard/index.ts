@@ -9,6 +9,7 @@ import { create } from './subcommands/create';
 import { remove } from './subcommands/delete';
 import { recover } from './subcommands/recover';
 import { hasPermission } from '../../API/Services/Permissions';
+import Logger from '../../API/Util/Logger';
 
 const config = require("../../../config.json");
 const messages = require("../../../messages.json");
@@ -34,7 +35,8 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				await create.execute(client, interaction)
 
 			} catch (err) {
-				console.error(err);
+				Logger.error("ERROR while create execute command");
+
 				return interaction.reply({ content: messages.EN.command_error, ephemeral: true })
 			}
 		} else if(interaction.options.getSubcommand() === 'delete') {
@@ -42,7 +44,8 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				await remove.execute(client, interaction)
 
 			} catch (err) {
-				console.error(err);
+				Logger.error("ERROR while remove execute command");
+
 				return interaction.reply({ content: messages.EN.command_error, ephemeral: true })
 			}
 		} else {
@@ -50,7 +53,7 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				await recover.execute(client, interaction)
 
 			} catch (err) {
-				console.error(err);
+				Logger.error("ERROR while recover execute command");
 				return interaction.reply({ content: messages.EN.command_error, ephemeral: true })
 			}
 		}

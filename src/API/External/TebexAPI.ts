@@ -134,6 +134,15 @@ export const TebexAPI = {
             error_message: 'Giftcards not found with the username ' + user
         }
 
+    },
+    getLastPaymentFromUser: async (token: string, user: string) => {
+        const payments = await TebexAPI.getPaymentsFromUser(token, user);
+        if ('error_code' in payments) return null;
+        if (payments.payments.length <= 0) return null;
+        const payment = await TebexAPI.getPaymentFromId(token, payments.payments[0].txn_id);
+        if (Array.isArray(payment)) return null;
+        return payment.packages;
+
     }
 
 }
@@ -142,21 +151,30 @@ interface IError {
     error_message: string
 }
 interface IAllGiftcards {
-    data: Array<IGifcard>
+    data: Array<{
+        id: number,
+        code: string,
+        balance: {
+            starting: string,
+            remaining: string,
+            currency: string
+        },
+        note: string,
+        void: boolean
+    }>
 }
 interface IManageGiftcard {
-    data: IGifcard
-}
-interface IGifcard {
-    id: number,
-    code: string,
-    balance: {
-        starting: string,
-        remaining: string,
-        currency: string
-    },
-    note: string,
-    void: boolean
+    data: {
+        id: number,
+        code: string,
+        balance: {
+            starting: string,
+            remaining: string,
+            currency: string
+        },
+        note: string,
+        void: boolean
+    }
 }
 
 interface IBan {
@@ -192,19 +210,16 @@ export interface IPaymentFromID {
         name: string
         uuid: string
     },
-    packages: Array<IPackage>
-    notes: Array<INote>
+    packages: Array<{
+        id: string,
+        name: string
+    }>
+    notes: Array<{
+        created_at: string,
+        note: string
+    }>
     creator_code: string
 }
-interface INote {
-    created_at: string
-    note: string
-}
-interface IPackage {
-    id: string
-    name: string
-}
-
 
 
 export interface IPayments {
