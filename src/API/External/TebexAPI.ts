@@ -128,6 +128,7 @@ export const TebexAPI = {
         const res = await request<IAllGiftcards | IError>(url, requestOptions);
         if ('error_code' in res) return res;
         let giftcard = res.data.filter(elem => elem.note.split(':')[1] === user)
+        giftcard.filter(elem => !elem.void)
         if (giftcard.length > 0) return giftcard;
         else return {
             error_code: 422,
