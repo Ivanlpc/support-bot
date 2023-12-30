@@ -2,7 +2,6 @@ import path from 'path';
 import fs from 'fs';
 import Bot from "./structures/Bot";
 import Logger from './API/Util/Logger';
-import Events2 from "./events/V2";
 import { unhandledRejection, uncaughtException } from './API/Proccess';
 const config = require("../config.json");
 const TOKEN: string = config.TOKEN;
@@ -13,7 +12,7 @@ process.on('unhandledRejection', unhandledRejection);
 process.on('uncaughtException', uncaughtException);
 
 //Import events
-const eventsPath: string = path.join(__dirname, 'events/DiscordV1');
+const eventsPath: string = path.join(__dirname, 'events');
 const eventsFile: string[] = fs.readdirSync(eventsPath);
 for (const file of eventsFile) {
 	let filePath = path.join(eventsPath, file);
@@ -54,8 +53,5 @@ for(const file of menusFile){
 		Logger.info("\u001b[32m", `[✔] Loaded ${select_menu.customId} Select-Menu`, "\u001b[0m")
 	}
 }
-Events2()
-	.then(() => Logger.info('Handling events...'))
-	.catch(err => Logger.error(err));
 
 client.login(TOKEN)

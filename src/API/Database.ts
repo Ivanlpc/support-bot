@@ -3,9 +3,9 @@ import Logger from './Util/Logger';
 
 const config = require("../../config.json");
 
-const HydraBot = mysql2.createPool(config.Database.HydraBot);
+const Shopy = mysql2.createPool(config.Database.shopy);
 
-HydraBot.getConnection((err, conn) => {
+Shopy.getConnection((err, conn) => {
   if (err) {
 
     Logger.error("\x1b[31m", err, "\u001b[0m");
@@ -17,31 +17,9 @@ HydraBot.getConnection((err, conn) => {
   }
 })
 
-const JPremium = mysql2.createPool(config.Database.JPremium);
-const Vyper = mysql2.createPool(config.Database.Vyper);
 
-Vyper.getConnection((err, conn) => {
-  if (err) {
-    Logger.error("\x1b[31m", err, "\u001b[0m");
-    process.exit(1);
 
-  } else {
-    if (conn) conn.release()
-    return;
-  }
-});
-JPremium.getConnection((err, conn) => {
-  if (err) {
-    Logger.error("\x1b[31m", err, "\u001b[0m");
-    process.exit(1);
-
-  } else {
-    if (conn) conn.release()
-    return;
-  }
-})
-
-HydraBot.on('connection', (conn) => {
+Shopy.on('connection', (conn) => {
   conn.on('error', (err: any) => {
     Logger.error("Conexión a la base de datos perdida...")
     setTimeout(() => {
@@ -67,4 +45,4 @@ export const execute = <T>(pool: Pool, query: string, params: string[] | Object)
   }
 }
 
-export { HydraBot, JPremium, Vyper };
+export { Shopy };

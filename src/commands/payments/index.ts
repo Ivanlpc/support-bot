@@ -19,13 +19,11 @@ const config = require("../../../config.json");
 const messages = require("../../../messages.json");
 
 
-const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-    .setCustomId('close')
-    .setLabel('Close')
-    .setEmoji('❌')
-    .setStyle(ButtonStyle.Primary)
-)
+const emojis: { [key: number]: string } = {
+	1: '✅',
+	3: '↩️',
+	0: '❌'
+};
 
 
 const data = new SlashCommandBuilder()
@@ -57,17 +55,20 @@ async function execute(client: Client, interaction: ChatInputCommandInteraction)
 				return interaction.reply({ content: messages[serverInfo.lang].no_payments_found, ephemeral: true })
 			}
 
-			const transactions = request.payments.slice(0, 25).map(elem => ({ 
-				label: 'ID: ' + elem.txn_id + ' - ' + new Date(elem.time * 1000).toLocaleDateString(), 
-				value: elem.txn_id 
+			const transactions = request.payments.slice(0, 25).map(elem => ({
+				label: 'ID: ' + elem.txn_id.split('-')[1] + '... - ' + new Date(elem.time * 1000).toLocaleDateString(),
+				value: elem.txn_id,
+				emoji: {
+					name: emojis[elem.status] || emojis[0]
+				}
 			}));
 			let button = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder()
-				.setCustomId('close')
-				.setLabel(messages[serverInfo.lang].close)
-				.setEmoji('❌')
-				.setStyle(ButtonStyle.Primary)
-			)
+					.setCustomId('close')
+					.setLabel(messages[serverInfo.lang].close)
+					.setEmoji('❌')
+					.setStyle(ButtonStyle.Primary)
+			);
 			let select_menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setCustomId('payments;TB')
