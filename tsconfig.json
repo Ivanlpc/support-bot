@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "CommonJS",
+    "target": "ES2023",
+    "module": "Node16",
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
@@ -9,6 +9,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "moduleResolution": "Node16",
+    "types": ["node"],
+    "sourceMap": true
   },
-  "exclude": ["src/**/*.test.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/test"]
 }

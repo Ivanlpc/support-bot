@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Support Bot database backup
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+Unit=support-bot-backup.service
+
+[Install]
+WantedBy=timers.target

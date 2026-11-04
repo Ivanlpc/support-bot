@@ -1,108 +1,108 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
-import Command from '../../structures/Command';
 import {
-	Client,
-	ChatInputCommandInteraction,
-	GuildMember,
-	StringSelectMenuBuilder,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle
+  SlashCommandBuilder,
+  Client,
+  ChatInputCommandInteraction,
+  GuildMember,
 } from 'discord.js';
+import Command from '../../structures/Command';
+import { config } from '../../config';
+import { messages } from '../../messages';
+import { respond } from '../../API/Util/Respond';
 import { hasPermission } from '../../API/Services/Permissions';
-
 import { getServerInformation } from '../../API/Services/Guilds';
+import { createPager, arrayPages } from '../../API/Services/Pagination';
 import { TebexAPI } from '../../API/External/TebexAPI';
-import { CraftingstoreAPI } from '../../API/External/CraftingstoreAPI';
-
-const config = require("../../../config.json");
-const messages = require("../../../messages.json");
-
-
-const emojis: { [key: number]: string } = {
-	1: '✅',
-	3: '↩️',
-	0: '❌'
-};
-
+import { requestPaymentByPage } from '../../API/External/CraftingstoreAPI';
 
 const data = new SlashCommandBuilder()
-	.setName(config.Commands.payments.command_name)
-	.setDescription(config.Commands.payments.command_description)
-	.addStringOption(option => option
-		.setName('user')
-		.setDescription(config.Commands.payments.command_requirements_user)
-		.setRequired(true))
-
-
-const enabled: boolean = config.Commands.payments.enabled;
-
-async function execute(client: Client, interaction: ChatInputCommandInteraction) {
-	if (interaction.channel && !interaction.channel.isDMBased() && interaction.guildId && interaction.member instanceof GuildMember) {
-		
-		const serverInfo = await getServerInformation(interaction.guildId);
-		if (serverInfo.setup === 0) return interaction.reply({ content: messages[serverInfo.lang].setup_not_done, ephemeral: true })
-		const allowed: boolean = await hasPermission(interaction.member, config.Commands.payments.command_name);
-		if (!allowed) {
-			return interaction.reply({ content: messages[serverInfo.lang].no_permission, ephemeral: true })
-		}
-		if (serverInfo.type === 'tebex') {
-			const request = await TebexAPI.getPaymentsFromUser(serverInfo.token, interaction.options.getString('user', true));
-			if (("error_code" in (request))) {
-				return interaction.reply({ content: "TEBEX: "+request.error_message, ephemeral: true })
-			}
-			if (request.payments.length === 0) {
-				return interaction.reply({ content: messages[serverInfo.lang].no_payments_found, ephemeral: true })
-			}
-
-			const transactions = request.payments.slice(0, 25).map(elem => ({
-				label: 'ID: ' + elem.txn_id.split('-')[1] + '... - ' + new Date(elem.time * 1000).toLocaleDateString(),
-				value: elem.txn_id,
-				emoji: {
-					name: emojis[elem.status] || emojis[0]
-				}
-			}));
-			let button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder()
-					.setCustomId('close')
-					.setLabel(messages[serverInfo.lang].close)
-					.setEmoji('❌')
-					.setStyle(ButtonStyle.Primary)
-			);
-			let select_menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-				new StringSelectMenuBuilder()
-					.setCustomId('payments;TB')
-					.setPlaceholder(messages[serverInfo.lang].select_transaction)
-					.addOptions(...transactions))
-			return interaction.reply({ components: [select_menu, button] })
-		}
-		const request = await CraftingstoreAPI.getUserPayments(serverInfo.token, interaction.options.getString('user', true));
-
-		if (!request.success) {
-			return interaction.reply({ content: messages[serverInfo.lang].command_error, ephemeral: true })
-		}
-		if (request.data.length <= 0) {
-			return interaction.reply({ content: messages[serverInfo.lang].no_payments_found })
-		}
-		const transactions = request.data.map(elem => ({
-			label: (elem.packageName.length > 25 ? elem.packageName.substring(0, 25) + '...' : elem.packageName) + ' - ' + new Date(elem.timestamp * 1000).toLocaleDateString(),
-			value: elem.inGameName + ';' + elem.transactionId
-		}))
-		let button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-			.setCustomId('close')
-			.setLabel(messages[serverInfo.lang].close)
-			.setEmoji('❌')
-			.setStyle(ButtonStyle.Primary)
-		)
-		let select_menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			new StringSelectMenuBuilder()
-				.setCustomId('payments;CS')
-				.setPlaceholder(messages[serverInfo.lang].select_transaction)
-				.addOptions(...transactions));
-		await interaction.reply({ components: [select_menu, button] });
-	}
+  .setName(config.Commands.payments.command_name)
+  .setDescription(config.Commands.payments.command_description)
+  .addStringOption((option) =>
+    option
+      .setName('user')
+      .setDescription(config.Commands.payments.command_requirements_user)
+      .setRequired(true)
+      .setMaxLength(64),
+  );
+async function execute(
+  client: Client,
+  interaction: ChatInputCommandInteraction,
+) {
+  if (!interaction.guildId || !(interaction.member instanceof GuildMember))
+    return;
+  if (!(await hasPermission(interaction.member, 'payments')))
+    return respond(interaction, {
+      content: messages.EN.no_permission,
+      ephemeral: true,
+    });
+  const info = await getServerInformation(interaction.guildId);
+  if (!info.setup)
+    return respond(interaction, {
+      content: messages.EN.setup_not_done,
+      ephemeral: true,
+    });
+  const player = interaction.options.getString('user', true);
+  const guildId = interaction.guildId;
+  if (info.type === 'tebex') {
+    const result = await TebexAPI.getPaymentsFromUser(info.token, player);
+    if ('error_code' in result) throw new Error('Tebex payment lookup failed');
+    if (!result.payments.length)
+      return respond(interaction, {
+        content: messages[info.lang].no_payments_found,
+      });
+    return respond(
+      interaction,
+      await createPager({
+        userId: interaction.user.id,
+        guildId,
+        kind: 'TB',
+        player,
+        load: arrayPages(
+          result.payments.map((payment) => ({
+            label:
+              payment.txn_id +
+              ' | ' +
+              new Date(payment.time * 1000).toLocaleDateString(),
+            value: payment.txn_id,
+          })),
+        ),
+      }),
+    );
+  }
+  return respond(
+    interaction,
+    await createPager({
+      userId: interaction.user.id,
+      guildId,
+      kind: 'CS',
+      player,
+      load: async (page) => {
+        const current = await getServerInformation(guildId);
+        if (!current.setup || current.type !== 'craftingstore')
+          throw new Error('Store configuration changed; run the command again');
+        const result = await requestPaymentByPage(
+          player,
+          current.token,
+          page + 1,
+        );
+        if (!result.success)
+          throw new Error('CraftingStore payment lookup failed');
+        return {
+          options: result.data.map((payment) => ({
+            label:
+              payment.packageName +
+              ' | ' +
+              new Date(payment.timestamp * 1000).toLocaleDateString(),
+            value: payment.transactionId,
+          })),
+          totalPages: result.meta.lastPage,
+        };
+      },
+    }),
+  );
 }
-
-const command = new Command(data, enabled, execute);
-export { command }
+export const command = new Command(
+  data,
+  config.Commands.payments.enabled,
+  execute,
+);

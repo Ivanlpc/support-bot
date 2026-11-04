@@ -4,9 +4,12 @@ node_modules
 prod.config.yml
 .env
 config.json
-package-lock.json
 src/tests
 /src/config.yml
 logs.txt
 errors.txt
 dist
+.env.*
+!.env.example
+coverage
+*.tsbuildinfo

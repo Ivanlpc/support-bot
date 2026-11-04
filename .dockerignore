@@ -1,0 +1,10 @@
+**
+!package.json
+!package-lock.json
+!tsconfig*.json
+!example.config.json
+!messages.json
+!src
+!src/**
+!migrations
+!migrations/**
