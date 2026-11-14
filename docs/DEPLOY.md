@@ -59,6 +59,9 @@ Puedes configurar estas variables de GitHub:
 | -------------- | --------------------------------------------------------- |
 | LOG_LEVEL      | info; también admite debug, warn y error                  |
 | DOCKER_NETWORK | bridge; usa la red de tu MySQL si vive en otro contenedor |
+| TEBEX_URL      | https://plugin.tebex.io                                   |
+
+`TEBEX_URL` se configura como variable de GitHub, no como secret. El workflow la pasa al script de despliegue, que la escribe en `/opt/support-bot/.env` para cargarla en el contenedor. Si no está configurada o está vacía, se usa `https://plugin.tebex.io`.
 
 MySQL debe estar funcionando de forma independiente: este workflow construye y ejecuta únicamente el bot. Para MySQL instalado en el host puedes usar DB_HOST=host.docker.internal. Si usas un contenedor llamado db en la red support-bot_default, configura DB_HOST=db y DOCKER_NETWORK=support-bot_default.
 

@@ -15,12 +15,13 @@ exec 9>"$root/.deploy.lock"
 flock -n 9 || { echo 'Another deployment is running' >&2; exit 1; }
 temporary=$(mktemp "$root/.env-XXXXXXXX")
 trap 'rm -f "$temporary"' EXIT
-for variable in DISCORD_TOKEN ENCRYPTION_KEY DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME LOG_LEVEL; do
+for variable in DISCORD_TOKEN ENCRYPTION_KEY DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME TEBEX_URL LOG_LEVEL; do
   value=${!variable:-}
   if [[ $value == *$'\n'* || $value == *$'\r'* ]]; then
     echo "Secret $variable must be a single-line value." >&2; exit 1
   fi
   [[ $variable != DB_PORT || -n $value ]] || value=3306
+  [[ $variable != TEBEX_URL || -n $value ]] || value=https://plugin.tebex.io
   [[ $variable != LOG_LEVEL || -n $value ]] || value=info
   printf '%s=%s\n' "$variable" "$value" >> "$temporary"
 done

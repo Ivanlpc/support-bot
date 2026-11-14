@@ -31,6 +31,7 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
+          TEBEX_URL: ${{ vars.TEBEX_URL || 'https://plugin.tebex.io' }}
           LOG_LEVEL: ${{ vars.LOG_LEVEL || 'info' }}
           DOCKER_NETWORK: ${{ vars.DOCKER_NETWORK || 'bridge' }}
         run: bash deploy/run.sh "$DEPLOY_SHA"
