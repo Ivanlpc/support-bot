@@ -2,8 +2,6 @@
 
 El workflow tiene un único job en tu runner self-hosted: checkout, build de la imagen y docker run. Se ejecuta al publicar en main o mediante workflow_dispatch. No ejecuta pruebas ni gestiona systemd.
 
-Activa **Server Members Intent** en Discord Developer Portal → tu aplicación → Bot → Privileged Gateway Intents. El bot lo necesita para recibir las salidas de usuarios y borrar sus permisos directos del servidor en MySQL.
-
 ## Una carpeta en el VPS
 
 ```text

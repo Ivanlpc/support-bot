@@ -4,8 +4,6 @@ Bot de Discord en TypeScript para consultar pagos y administrar tarjetas regalo 
 
 El bot utiliza siempre español. El idioma no se configura por servidor ni se guarda en MySQL.
 
-Cuando un usuario abandona el servidor, se eliminan sus permisos directos del bot en ese servidor. Activa **Server Members Intent** en Discord Developer Portal → tu aplicación → Bot → Privileged Gateway Intents antes de iniciar esta versión. También se procesan las salidas de miembros que el bot no tiene en caché.
-
 ## Despliegue en tu VPS
 
 La [guía de despliegue](docs/DEPLOY.md) prepara un runner self-hosted con etiqueta support-bot. El workflow hace checkout, construye la imagen y la ejecuta con docker run. Las credenciales se obtienen de GitHub Secrets, se guardan en /opt/support-bot/.env y se cargan al arrancar. Código, configuración y logs permanecen bajo /opt/support-bot.
