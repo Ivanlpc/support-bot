@@ -1,9 +1,45 @@
 import Logger from './Util/Logger';
-import { registerSecret } from './Util/Log';
+import { registerSecret, sanitize } from './Util/Log';
 
 export class APIError extends Error {
-  constructor(public readonly status: number) {
+  public readonly responseBody: unknown;
+  constructor(
+    public readonly status: number,
+    responseBody?: unknown,
+  ) {
     super('API request failed with HTTP ' + status);
+    this.name = 'APIError';
+    this.responseBody = sanitize(responseBody);
+  }
+}
+
+async function errorBody(response: Response): Promise<unknown> {
+  const reader = response.body?.getReader();
+  if (!reader) return undefined;
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 16_384) {
+        await reader.cancel();
+        return '[Response body omitted: exceeds 16384 bytes]';
+      }
+      chunks.push(value);
+    }
+    const raw = Buffer.concat(chunks).toString('utf8');
+    if (!raw) return undefined;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  } catch {
+    return '[Response body unavailable]';
+  } finally {
+    reader.releaseLock();
   }
 }
 
@@ -42,7 +78,8 @@ export async function request<T>(
       });
       return options.notFoundValue;
     }
-    if (!response.ok) throw new APIError(response.status);
+    if (!response.ok)
+      throw new APIError(response.status, await errorBody(response));
     let result: unknown;
     if (response.status !== 204) {
       const chunks: Uint8Array[] = [];

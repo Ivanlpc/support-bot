@@ -45,6 +45,8 @@ Los permisos usan identificadores internos: `search`, `payments`, `perm`, `ban`,
 
 No subas credenciales, copias ni registros de clientes al repositorio. El lockfile sí debe versionarse. El logger captura console.log, info, warn, error y debug y escribe en la terminal y en LOG_DIR/latest.log (logs/latest.log por defecto). latest.log se vacía al iniciar el bot. Las credenciales registradas y los campos sensibles se ocultan.
 
+La terminal y `docker logs` muestran fecha UTC, nivel (`INFO`, `WARN`, `ERROR`), contexto y detalles en bloques legibles, con las trazas en líneas separadas. Los errores HTTP incluyen el estado y `responseBody` con el motivo enviado por Tebex, tanto JSON como texto, hasta 16 KiB. `latest.log` conserva un registro JSON por línea.
+
 El comando `/logs` permite a los administradores del servidor descargar latest.log mediante una respuesta ephemeral. El archivo contiene los logs de todo el bot desde el último inicio. Si supera el límite de adjuntos, se envía su parte más reciente. Docker también permite consultarlos con docker logs.
 
 ## Desarrollo y comprobaciones

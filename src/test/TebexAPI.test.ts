@@ -40,6 +40,18 @@ before(async () => {
     const url = new URL(req.url!, 'http://localhost');
     calls.push(req.url!);
     res.setHeader('Content-Type', 'application/json');
+    if (url.pathname === '/gift-cards' && req.method === 'POST') {
+      res.writeHead(403);
+      res.end(
+        JSON.stringify({
+          error_code: 403,
+          error_message: 'Forbidden - Invalid secret key provided',
+          token: 'hidden-response-token',
+          detail: 'Credential test-token rejected',
+        }),
+      );
+      return;
+    }
     const failureStatus = new Map([
       ['/payments/missing', 404],
       ['/payments/unauthorized', 401],
@@ -78,6 +90,17 @@ before(async () => {
       res.end('{"secret":"must not appear in errors"}');
       return;
     }
+    if (url.pathname.startsWith('/error-')) {
+      res.writeHead(403);
+      res.end(
+        url.pathname === '/error-large'
+          ? 'x'.repeat(16_385)
+          : url.pathname === '/error-empty'
+            ? ''
+            : 'Forbidden for test-token',
+      );
+      return;
+    }
     if (url.pathname === '/gift-cards') {
       res.end(
         JSON.stringify({
@@ -106,6 +129,22 @@ after(async () => {
 });
 
 describe('API clients over local HTTP', () => {
+  it('preserves the sanitized Tebex error body on a failed giftcard creation', async () => {
+    await assert.rejects(
+      TebexAPI.createGiftcard('test-token', 25, 'creator', 'TestUser'),
+      (error: unknown) => {
+        assert.ok(error instanceof APIError);
+        assert.equal(error.status, 403);
+        assert.deepEqual(error.responseBody, {
+          error_code: 403,
+          error_message: 'Forbidden - Invalid secret key provided',
+          token: '[REDACTED]',
+          detail: 'Credential [REDACTED] rejected',
+        });
+        return true;
+      },
+    );
+  });
   it('returns no payment for HTTP 404 without requiring a valid response body', async (t) => {
     const errors = t.mock.method(Logger, 'error');
     assert.deepEqual(
@@ -180,8 +219,28 @@ describe('API clients over local HTTP', () => {
       (error: unknown) =>
         error instanceof APIError &&
         error.status === 429 &&
-        !error.message.includes('secret'),
+        !error.message.includes('secret') &&
+        !JSON.stringify(error.responseBody).includes(
+          'must not appear in errors',
+        ),
     );
+  });
+  it('handles non-JSON, empty and oversized error bodies without losing HTTP status', async () => {
+    for (const [path, body] of [
+      ['/error-text', 'Forbidden for [REDACTED]'],
+      ['/error-empty', undefined],
+      ['/error-large', '[Response body omitted: exceeds 16384 bytes]'],
+    ] as const) {
+      await assert.rejects(
+        request(base + path, { headers: { 'X-Tebex-Secret': 'test-token' } }),
+        (error: unknown) => {
+          assert.ok(error instanceof APIError);
+          assert.equal(error.status, 403);
+          assert.equal(error.responseBody, body);
+          return true;
+        },
+      );
+    }
   });
   it('bounds request time and rejects malformed JSON', async () => {
     await assert.rejects(request(base + '/slow', {}, 30), {

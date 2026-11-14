@@ -5,7 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { LogFile } from '../API/Util/LogFile';
 import Logger from '../API/Util/Logger';
-import { registerSecret } from '../API/Util/Log';
+import { registerSecret, logContext } from '../API/Util/Log';
+import { APIError } from '../API/Requests';
 
 it('limits snapshots to recent lines without changing the file', () => {
   const temporary = temporaryDirectory();
@@ -65,13 +66,11 @@ it('captures console output once in the terminal and file, hides secrets and res
     const terminal = [...stdout.mock.calls, ...stderr.mock.calls]
       .map((call) => String(call.arguments[0]))
       .sort();
-    assert.deepEqual(
-      terminal,
-      output
-        .trim()
-        .split('\n')
-        .map((line) => line + '\n')
-        .sort(),
+    assert.equal(terminal.length, 5);
+    assert.match(terminal.join(''), /\[INFO\] Hola \[REDACTED\]/);
+    assert.match(terminal.join(''), /\[WARN\] aviso/);
+    assert.ok(
+      !/console-private-secret|hidden-console-token/.test(terminal.join('')),
     );
   } finally {
     restore?.();
@@ -79,6 +78,46 @@ it('captures console output once in the terminal and file, hides secrets and res
     else process.env.LOG_DIR = previousDirectory;
     if (previousLevel === undefined) delete process.env.LOG_LEVEL;
     else process.env.LOG_LEVEL = previousLevel;
+    temporary.cleanup();
+  }
+});
+
+it('prints API failures with readable context, body and stack while keeping JSON in the file', (t) => {
+  const temporary = temporaryDirectory();
+  const previousDirectory = process.env.LOG_DIR;
+  try {
+    process.env.LOG_DIR = temporary.directory;
+    const stderr = t.mock.method(process.stderr, 'write', () => true);
+    registerSecret('pretty-private-token');
+    logContext.run({ command: 'giftcard', guildId: '123' }, () => {
+      Logger.error(
+        'API request failed',
+        {
+          provider: 'plugin.tebex.io',
+          resource: 'gift-cards',
+          method: 'POST',
+          durationMs: 12,
+        },
+        new APIError(403, {
+          error_message: 'Forbidden',
+          token: 'pretty-private-token',
+        }),
+      );
+    });
+    const terminal = String(stderr.mock.calls[0].arguments[0]);
+    assert.match(terminal, /\[ERROR\] API request failed/);
+    assert.match(terminal, /command=giftcard/);
+    assert.match(terminal, /status: 403/);
+    assert.match(terminal, /responseBody:/);
+    assert.match(terminal, /error_message: 'Forbidden'/);
+    assert.match(terminal, /\n\s+at /);
+    assert.ok(!terminal.includes('pretty-private-token'));
+    const record = JSON.parse(Logger.snapshot(10000).data.toString('utf8'));
+    assert.equal(record.details[1].responseBody.error_message, 'Forbidden');
+    assert.equal(record.details[1].responseBody.token, '[REDACTED]');
+  } finally {
+    if (previousDirectory === undefined) delete process.env.LOG_DIR;
+    else process.env.LOG_DIR = previousDirectory;
     temporary.cleanup();
   }
 });
