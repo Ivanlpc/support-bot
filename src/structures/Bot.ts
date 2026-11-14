@@ -16,8 +16,12 @@ export default class Bot extends Client {
   constructor() {
     super({
       allowedMentions: { parse: [], repliedUser: false },
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-      partials: [Partials.Channel, Partials.Message],
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMembers,
+      ],
+      partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
     });
     this.RestCommands = new Array();
     this.commands = new Collection();
