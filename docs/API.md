@@ -14,6 +14,8 @@ Los logs incluyen proveedor, recurso, método, estado y duración. Las peticione
 
 ## Integraciones
 
+Para depurar la autenticación, tras registrar una petición fallida con la cabecera `X-Tebex-Secret`, se escribe un bloque adicional `Tebex request authentication (debug)` con su valor completo. Esta excepción a la ocultación se aplica tanto a la terminal como a `latest.log`, accesible mediante `/logs`. El diagnóstico principal conserva su saneado habitual e incluye el payload en `request.payload`.
+
 | Proveedor | Base                    | Autenticación  | Operaciones                       |
 | --------- | ----------------------- | -------------- | --------------------------------- |
 | Tebex     | https://plugin.tebex.io | X-Tebex-Secret | Pagos, usuarios, tarjetas y vetos |

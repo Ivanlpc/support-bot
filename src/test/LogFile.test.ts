@@ -6,7 +6,9 @@ import path from 'node:path';
 import { LogFile } from '../API/Util/LogFile';
 import Logger from '../API/Util/Logger';
 import { registerSecret, logContext } from '../API/Util/Log';
-import { APIError } from '../API/Requests';
+import { APIError, request } from '../API/Requests';
+import { createServer } from 'node:http';
+import { AddressInfo } from 'node:net';
 
 it('limits snapshots to recent lines without changing the file', () => {
   const temporary = temporaryDirectory();
@@ -118,6 +120,77 @@ it('prints API failures with readable context, body and stack while keeping JSON
   } finally {
     if (previousDirectory === undefined) delete process.env.LOG_DIR;
     else process.env.LOG_DIR = previousDirectory;
+    temporary.cleanup();
+  }
+});
+
+it('prints failed request payloads and the exact Tebex header in the terminal and file', async (t) => {
+  const temporary = temporaryDirectory();
+  const previousDirectory = process.env.LOG_DIR;
+  const previousLevel = process.env.LOG_LEVEL;
+  const server = createServer((_req, res) => {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error_message: 'Blocked for debugging' }));
+  });
+  try {
+    process.env.LOG_DIR = temporary.directory;
+    process.env.LOG_LEVEL = 'error';
+    const stderr = t.mock.method(process.stderr, 'write', () => true);
+    await new Promise<void>((resolve) =>
+      server.listen(0, '127.0.0.1', resolve),
+    );
+    const body = new FormData();
+    body.append('amount', '25');
+    body.append('note', 'LINKED:42: Created with Discord bot');
+    await assert.rejects(
+      request(
+        `http://127.0.0.1:${(server.address() as AddressInfo).port}/gift-cards`,
+        {
+          method: 'POST',
+          headers: { 'X-Tebex-Secret': 'exact-tebex-debug-key' },
+          body,
+        },
+      ),
+      APIError,
+    );
+    const terminal = stderr.mock.calls
+      .map((call) => String(call.arguments[0]))
+      .join('');
+    assert.match(terminal, /payload:/);
+    assert.match(terminal, /amount: \[ '25' \]/);
+    assert.match(terminal, /LINKED:42: Created with Discord bot/);
+    assert.match(terminal, /'X-Tebex-Secret': 'exact-tebex-debug-key'/);
+    const records = Logger.snapshot(20000)
+      .data.toString('utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    assert.deepEqual(records[0].details[0].request.payload, {
+      amount: ['25'],
+      note: ['LINKED:42: Created with Discord bot'],
+    });
+    assert.equal(
+      records[0].details[0].request.sentHeaders['x-tebex-secret'],
+      '[REDACTED]',
+    );
+    assert.equal(
+      records[1].details[0]['X-Tebex-Secret'],
+      'exact-tebex-debug-key',
+    );
+    Logger.error('Other secrets stay hidden', {
+      token: 'exact-tebex-debug-key',
+      password: 'hidden-password',
+    });
+    const last = String(stderr.mock.calls.at(-1)!.arguments[0]);
+    assert.ok(!last.includes('exact-tebex-debug-key'));
+    assert.ok(!last.includes('hidden-password'));
+  } finally {
+    server.closeAllConnections();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    if (previousDirectory === undefined) delete process.env.LOG_DIR;
+    else process.env.LOG_DIR = previousDirectory;
+    if (previousLevel === undefined) delete process.env.LOG_LEVEL;
+    else process.env.LOG_LEVEL = previousLevel;
     temporary.cleanup();
   }
 });

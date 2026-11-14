@@ -154,6 +154,7 @@ export function writeLog(
   message: string,
   details: unknown[],
   force = false,
+  unredactedTebexSecret?: string,
 ): void {
   const configured = process.env.LOG_LEVEL ?? 'info';
   if (!force && priorities[level] < (priorities[configured as Level] ?? 20))
@@ -165,6 +166,10 @@ export function writeLog(
     ...logContext.getStore(),
     details,
   }) as Record<string, unknown>;
+  if (unredactedTebexSecret !== undefined)
+    (record.details as unknown[]).push({
+      'X-Tebex-Secret': unredactedTebexSecret,
+    });
   const line = JSON.stringify(record);
   (level === 'error' || level === 'warn'
     ? process.stderr

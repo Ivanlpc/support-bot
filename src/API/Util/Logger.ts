@@ -22,4 +22,13 @@ export default class Logger {
       typeof message === 'string' ? details : [message, ...details],
     );
   }
+  static tebexAuthenticationDebug(secret: string): void {
+    writeLog(
+      'error',
+      'Tebex request authentication (debug)',
+      [],
+      false,
+      secret,
+    );
+  }
 }

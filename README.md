@@ -49,6 +49,8 @@ La terminal y `docker logs` muestran fecha UTC, nivel (`INFO`, `WARN`, `ERROR`),
 
 Las peticiones fallidas incluyen URL, parámetros, payload, cabeceras configuradas y enviadas, dirección remota, IPv4/IPv6, TLS/ALPN y versiones de Node/Undici. Se registran también las cabeceras de respuesta `cf-ray`, `cf-mitigated`, `server`, tipo de contenido y límites de reintento. Los campos sensibles y credenciales se ocultan; los archivos y streams del payload se omiten. El cliente de Tebex envía `User-Agent: support-bot/1.2.0 (+https://github.com/Ivanlpc/support-bot)` y `Accept: application/json`. El tipo de contenido multipart y su boundary los genera `fetch`.
 
+Para depurar la autenticación, las peticiones fallidas con `X-Tebex-Secret` generan además un bloque `Tebex request authentication (debug)` que muestra esa clave completa, sin ocultarla, en la terminal y en `latest.log` (también descargable con `/logs`). El payload aparece en el bloque anterior, dentro de `request.payload`; las peticiones correctas no vuelcan el payload ni la clave.
+
 El comando `/logs` permite a los administradores del servidor descargar latest.log mediante una respuesta ephemeral. El archivo contiene los logs de todo el bot desde el último inicio. Si supera el límite de adjuntos, se envía su parte más reciente. Docker también permite consultarlos con docker logs.
 
 ## Desarrollo y comprobaciones

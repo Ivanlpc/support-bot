@@ -149,6 +149,8 @@ export async function request<T>(
       }),
       error,
     );
+    const tebexSecret = headers.get('X-Tebex-Secret');
+    if (tebexSecret !== null) Logger.tebexAuthenticationDebug(tebexSecret);
     throw error;
   }
 }
