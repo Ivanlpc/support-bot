@@ -5,6 +5,15 @@ import { AddressInfo } from 'node:net';
 import { config } from '../config';
 import { TebexAPI } from '../API/External/TebexAPI';
 import { request, APIError } from '../API/Requests';
+import {
+  ChatInputCommandInteraction,
+  Client,
+  GuildMember,
+  InteractionReplyOptions,
+} from 'discord.js';
+import { createSearchCommand } from '../commands/search';
+import { messages } from '../messages';
+import Logger from '../API/Util/Logger';
 
 let server: Server;
 let base: string;
@@ -31,6 +40,20 @@ before(async () => {
     const url = new URL(req.url!, 'http://localhost');
     calls.push(req.url!);
     res.setHeader('Content-Type', 'application/json');
+    const failureStatus = new Map([
+      ['/payments/missing', 404],
+      ['/payments/unauthorized', 401],
+      ['/payments/forbidden', 403],
+      ['/payments/unavailable', 500],
+      ['/payments/limited', 429],
+      ['/gift-cards/missing', 404],
+    ]).get(url.pathname);
+    if (failureStatus) {
+      assert.equal(req.headers['x-tebex-secret'], 'test-token');
+      res.writeHead(failureStatus);
+      res.end('<html>Not found</html>');
+      return;
+    }
     if (url.pathname === '/slow') return;
     if (url.pathname === '/large') {
       res.end(JSON.stringify({ data: 'x'.repeat(2_000_001) }));
@@ -83,6 +106,59 @@ after(async () => {
 });
 
 describe('API clients over local HTTP', () => {
+  it('returns no payment for HTTP 404 without requiring a valid response body', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    assert.deepEqual(
+      await TebexAPI.getPaymentFromId('test-token', 'missing'),
+      [],
+    );
+    assert.equal(errors.mock.callCount(), 0);
+  });
+  it('answers a missing payment in Discord without reporting a command error', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    const replies: InteractionReplyOptions[] = [];
+    const command = createSearchCommand({
+      getServerInformation: async () => ({ setup: 1, token: 'test-token' }),
+      hasPermission: async () => true,
+      getPaymentFromId: TebexAPI.getPaymentFromId,
+    });
+    await command.execute(
+      {} as Client,
+      {
+        guildId: 'guild',
+        member: Object.create(GuildMember.prototype),
+        channel: { isDMBased: () => false },
+        options: { getString: () => 'missing' },
+        reply: async (reply: InteractionReplyOptions) => {
+          replies.push(reply);
+        },
+      } as unknown as ChatInputCommandInteraction,
+    );
+    assert.equal(calls.at(-1), '/payments/missing');
+    assert.equal(replies.length, 1);
+    assert.equal(replies[0].content, messages.payment_not_found);
+    assert.equal(errors.mock.callCount(), 0);
+  });
+  it('keeps authentication, rate limit and server errors as failures', async () => {
+    for (const [transaction, status] of [
+      ['unauthorized', 401],
+      ['forbidden', 403],
+      ['unavailable', 500],
+      ['limited', 429],
+    ] as const) {
+      await assert.rejects(
+        TebexAPI.getPaymentFromId('test-token', transaction),
+        (error: unknown) =>
+          error instanceof APIError && error.status === status,
+      );
+    }
+  });
+  it('does not turn a giftcard deletion HTTP 404 into a successful result', async () => {
+    await assert.rejects(
+      TebexAPI.deleteGiftcard('test-token', 'missing'),
+      (error: unknown) => error instanceof APIError && error.status === 404,
+    );
+  });
   it('sends Tebex authentication and encodes path segments', async () => {
     const result = await TebexAPI.getPaymentFromId('test-token', 'a/b?x=1');
     assert.ok(!Array.isArray(result));

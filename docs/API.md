@@ -8,6 +8,8 @@ El proyecto consume APIs externas y no publica un servidor HTTP propio. Las resp
 
 No se reintentan automáticamente las escrituras. Una tarjeta puede haberse creado aunque se pierda su respuesta: comprobarla antes de repetir la operación.
 
+La búsqueda de un pago de Tebex por ID trata HTTP 404 como pago no encontrado y lo registra a nivel informativo. Discord muestra «Pago no encontrado». El resto de estados HTTP erróneos conserva el tratamiento de excepción, incluido un 404 al eliminar una tarjeta.
+
 Los logs incluyen proveedor, recurso, método, estado y duración. No incluyen las cabeceras, el cuerpo ni el nombre de usuario de la URL. Los errores de validación identifican los campos afectados y omiten los valores recibidos.
 
 ## Integraciones

@@ -26,58 +26,72 @@ const data = new SlashCommandBuilder()
 
 const enabled: boolean = config.Commands.search_transaction.enabled;
 
-async function execute(
-  client: Client,
-  interaction: ChatInputCommandInteraction,
+export function createSearchCommand(
+  service = {
+    getServerInformation,
+    hasPermission,
+    getPaymentFromId: TebexAPI.getPaymentFromId,
+  },
 ) {
-  if (
-    interaction.channel &&
-    !interaction.channel.isDMBased() &&
-    interaction.guildId &&
-    interaction.member instanceof GuildMember
+  async function execute(
+    client: Client,
+    interaction: ChatInputCommandInteraction,
   ) {
-    const serverInfo = await getServerInformation(interaction.guildId);
-    if (serverInfo.setup === 0)
-      return respond(interaction, {
-        content: messages.setup_not_done,
-        ephemeral: true,
-      });
-    const allowed: boolean = await hasPermission(interaction.member, 'search');
-    if (!allowed) {
-      return respond(interaction, {
-        content: messages.no_permission,
-        ephemeral: true,
-      });
-    }
-    try {
-      const request = await TebexAPI.getPaymentFromId(
-        serverInfo.token,
-        interaction.options.getString('id', true),
+    if (
+      interaction.channel &&
+      !interaction.channel.isDMBased() &&
+      interaction.guildId &&
+      interaction.member instanceof GuildMember
+    ) {
+      const serverInfo = await service.getServerInformation(
+        interaction.guildId,
       );
-      if (!Array.isArray(request)) {
-        if (request.error_code) {
+      if (serverInfo.setup === 0)
+        return respond(interaction, {
+          content: messages.setup_not_done,
+          ephemeral: true,
+        });
+      const allowed: boolean = await service.hasPermission(
+        interaction.member,
+        'search',
+      );
+      if (!allowed) {
+        return respond(interaction, {
+          content: messages.no_permission,
+          ephemeral: true,
+        });
+      }
+      try {
+        const request = await service.getPaymentFromId(
+          serverInfo.token,
+          interaction.options.getString('id', true),
+        );
+        if (!Array.isArray(request)) {
+          if (request.error_code) {
+            return respond(interaction, {
+              content: 'TEBEX: ' + request.error_message,
+              ephemeral: true,
+            });
+          }
           return respond(interaction, {
-            content: 'TEBEX: ' + request.error_message,
-            ephemeral: true,
+            embeds: [Embeds.transaction_tebex_embed(request)],
           });
         }
         return respond(interaction, {
-          embeds: [Embeds.transaction_tebex_embed(request)],
+          content: messages.payment_not_found,
+        });
+      } catch (err) {
+        Logger.error('Payment search failed', err);
+        Logger.error('Error while TebexAPI getPaymentFromId in search command');
+        return respond(interaction, {
+          content: messages.command_error,
+          ephemeral: true,
         });
       }
-      return respond(interaction, {
-        content: messages.payment_not_found,
-      });
-    } catch (err) {
-      Logger.error('Payment search failed', err);
-      Logger.error('Error while TebexAPI getPaymentFromId in search command');
-      return respond(interaction, {
-        content: messages.command_error,
-        ephemeral: true,
-      });
     }
   }
-}
 
-const command = new Command(data, enabled, execute);
+  return new Command(data, enabled, execute);
+}
+const command = createSearchCommand();
 export { command };

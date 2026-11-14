@@ -11,6 +11,7 @@ export async function request<T>(
   input: string | URL,
   init: RequestInit = {},
   timeoutMs = 15_000,
+  options: { notFoundValue?: T } = {},
 ): Promise<T> {
   const url = new URL(input);
   if (url.username || url.password)
@@ -32,6 +33,15 @@ export async function request<T>(
     : timeout;
   try {
     const response = await fetch(input, { ...init, signal, redirect: 'error' });
+    if (response.status === 404 && options.notFoundValue !== undefined) {
+      await response.body?.cancel();
+      Logger.info('API resource not found', {
+        ...context,
+        status: response.status,
+        durationMs: Math.round(performance.now() - started),
+      });
+      return options.notFoundValue;
+    }
     if (!response.ok) throw new APIError(response.status);
     let result: unknown;
     if (response.status !== 204) {

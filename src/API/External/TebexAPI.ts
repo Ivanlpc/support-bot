@@ -8,14 +8,17 @@ async function call<T extends z.ZodType>(
   token: string,
   path: string,
   response: T,
-  init: RequestInit = {},
+  init: RequestInit & { notFoundValue?: z.input<T> } = {},
 ): Promise<z.output<T>> {
+  const { notFoundValue, ...requestInit } = init;
   return schema.parseResponse(
     response,
-    await request(config.TEBEX_URL + path, {
-      ...init,
-      headers: headers(token),
-    }),
+    await request(
+      config.TEBEX_URL + path,
+      { ...requestInit, headers: headers(token) },
+      undefined,
+      { notFoundValue },
+    ),
     'Tebex ' + (init.method ?? 'GET') + ' ' + path.split('/')[1],
   );
 }
@@ -49,6 +52,7 @@ export const TebexAPI = {
       token,
       '/payments/' + encodeURIComponent(transaction),
       z.union([schema.tebexPayment, z.array(z.never())]),
+      { notFoundValue: [] },
     );
     return Array.isArray(result) ? [] : result;
   },
