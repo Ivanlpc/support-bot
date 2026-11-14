@@ -1,5 +1,5 @@
 import { respond } from '../../API/Util/Respond';
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js';
 import Command from '../../structures/Command';
 import { Client, ChatInputCommandInteraction, GuildMember } from 'discord.js';
 import { create } from './subcommands/create';
@@ -17,6 +17,17 @@ const data = new SlashCommandBuilder()
   .addSubcommand(create.getData())
   .addSubcommand(remove.getData())
   .addSubcommand(recover.getData());
+
+if (
+  !Object.values(config.Commands.giftcard.subcommand).some(
+    (subcommand) => subcommand.name === 'list',
+  )
+)
+  data.addSubcommand(
+    new SlashCommandSubcommandBuilder()
+      .setName('list')
+      .setDescription(config.Commands.giftcard.subcommand.recover.description),
+  );
 
 const enabled: boolean = config.Commands.giftcard.enabled;
 
@@ -44,7 +55,7 @@ async function execute(
     if (!allowed) {
       return respond(interaction, {
         content: messages.no_permission,
-        ephemeral: true,
+        ephemeral: action !== 'create',
       });
     }
     if (action === 'create') {
@@ -55,7 +66,7 @@ async function execute(
 
         return respond(interaction, {
           content: messages.command_error,
-          ephemeral: true,
+          ephemeral: false,
         });
       }
     } else if (action === 'delete') {

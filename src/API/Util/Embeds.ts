@@ -11,11 +11,11 @@ export function text(value: unknown, limit = 1024): string {
 function embed(
   title: string,
   fields: { name: string; value: unknown }[],
-  footer: string,
+  footer: string | undefined,
   color: ColorResolvable,
 ) {
   const safeTitle = text(title, 256),
-    safeFooter = text(footer, 256);
+    safeFooter = footer ? text(footer, 256) : '';
   const selected = fields.slice(0, 25);
   const names = selected.map((field) => text(field.name, 128));
   const available =
@@ -27,9 +27,8 @@ function embed(
     1024,
     Math.floor(available / Math.max(1, selected.length)),
   );
-  return new EmbedBuilder()
+  const result = new EmbedBuilder()
     .setTitle(safeTitle)
-    .setFooter({ text: safeFooter })
     .setColor(color)
     .addFields(
       selected.map((field, index) => ({
@@ -37,6 +36,8 @@ function embed(
         value: text(field.value, perField),
       })),
     );
+  if (safeFooter) result.setFooter({ text: safeFooter });
+  return result;
 }
 export const Embeds = {
   accepting_terms_embed: () =>
@@ -86,7 +87,7 @@ export const Embeds = {
         name: '/' + command.command_name,
         value: command.command_description,
       })),
-      m.footer,
+      undefined,
       'Grey',
     );
   },
@@ -104,7 +105,7 @@ export const Embeds = {
         { name: m.code, value: code },
         { name: m.amount, value: amount + ' ' + (currency ?? '') },
       ],
-      m.footer,
+      user ? 'Usa /giftcard list para ver tus giftcards' : undefined,
       'Green',
     );
   },
@@ -117,7 +118,7 @@ export const Embeds = {
         { name: m.reason, value: reason },
         ...(ip ? [{ name: m.ip, value: ip }] : []),
       ],
-      m.footer,
+      undefined,
       'Red',
     ).setTimestamp();
   },

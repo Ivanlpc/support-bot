@@ -37,7 +37,11 @@ const event = new Event(
             config.Commands.ban.command_name,
           ].includes(interaction.commandName)
         ) {
-          await interaction.deferReply({ ephemeral: true });
+          const publicGiftcardCreation =
+            interaction.commandName === config.Commands.giftcard.command_name &&
+            interaction.options.getSubcommand(false) ===
+              config.Commands.giftcard.subcommand.create.name;
+          await interaction.deferReply({ ephemeral: !publicGiftcardCreation });
         }
         await command.execute(client, interaction);
         return;

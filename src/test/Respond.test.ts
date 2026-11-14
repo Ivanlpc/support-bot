@@ -4,6 +4,20 @@ import { RepliableInteraction } from 'discord.js';
 import { respond } from '../API/Util/Respond';
 
 describe('Discord responses', () => {
+  it('preserves an explicitly public follow-up', async () => {
+    let reply: unknown;
+    await respond(
+      {
+        deferred: false,
+        replied: true,
+        followUp: async (options: unknown) => {
+          reply = options;
+        },
+      } as unknown as RepliableInteraction,
+      { content: 'Public giftcard', ephemeral: false },
+    );
+    assert.deepEqual(reply, { content: 'Public giftcard', ephemeral: false });
+  });
   for (const state of ['fresh', 'deferred', 'replied']) {
     it('responds correctly when ' + state, async () => {
       const calls: { method: string; options: unknown }[] = [];

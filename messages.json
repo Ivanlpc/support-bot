@@ -40,6 +40,5 @@
   "reason": "Razón",
   "select_transaction": "SELECCIONA TRANSACCIÓN",
   "close": "CERRAR",
-  "footer": "Desarrollado por github.com/ivanlpc",
   "setup_permission": "Debes ser el propietario del servidor o tener el permiso de Administrador para configurar Tebex."
 }

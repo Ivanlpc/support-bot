@@ -9,6 +9,9 @@ export async function respond(
     return interaction.editReply(editable);
   }
   if (interaction.replied)
-    return interaction.followUp({ ...options, ephemeral: true });
+    return interaction.followUp({
+      ...options,
+      ephemeral: options.ephemeral ?? true,
+    });
   return interaction.reply(options);
 }

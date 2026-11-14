@@ -27,7 +27,7 @@ Requiere Node.js 24.22.2 y MySQL o MariaDB. El esquema inicial se comprueba con 
 4. Ejecuta `npm run check` y después `npm start`.
 5. Invita al bot con los ámbitos `bot` y `applications.commands` y los permisos de canal necesarios. El propietario o un administrador configura Tebex con `/setup`. El propietario delega acceso con `/perm`.
 
-El bot registra comandos globales al conectarse. Los datos y las tarjetas se responden de forma privada. Solo el usuario que abrió un menú puede usarlo y las sesiones caducan a los 15 minutos.
+El bot registra comandos globales al conectarse. `/giftcard create` responde públicamente, incluidos sus errores. Si se vincula a un usuario, el embed indica «Usa /giftcard list para ver tus giftcards». `/giftcard list` es un alias de recuperación; los listados, la recuperación de tarjetas y las demás consultas siguen siendo privados. Solo el usuario que abrió un menú puede usarlo y las sesiones caducan a los 15 minutos.
 
 ## Configuración
 

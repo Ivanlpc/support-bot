@@ -49,7 +49,7 @@ const execute = async (
     if (serverInfo.setup === 0)
       return respond(interaction, {
         content: messages.setup_not_done,
-        ephemeral: true,
+        ephemeral: false,
       });
     try {
       const request = await TebexAPI.createGiftcard(
@@ -62,11 +62,12 @@ const execute = async (
       if ('error_code' in request) {
         return respond(interaction, {
           content: 'TEBEX: ' + request.error_message,
-          ephemeral: true,
+          ephemeral: false,
         });
       }
       if (request.data.code.length > 0) {
         return respond(interaction, {
+          ephemeral: false,
           embeds: [
             Embeds.giftcard_embed(
               request.data.code,
@@ -80,12 +81,13 @@ const execute = async (
       }
       return respond(interaction, {
         content: messages.error_giftcard,
+        ephemeral: false,
       });
     } catch (err) {
       Logger.error('Operation failed', err);
       return respond(interaction, {
         content: messages.command_error,
-        ephemeral: true,
+        ephemeral: false,
       });
     }
   }
