@@ -27,6 +27,11 @@
       "command_name": "help",
       "command_description": "Muestra los comandos del bot"
     },
+    "logs": {
+      "enabled": true,
+      "command_name": "logs",
+      "command_description": "Muestra los logs del bot, solo para administradores"
+    },
     "perm": {
       "enabled": true,
       "command_name": "perm",

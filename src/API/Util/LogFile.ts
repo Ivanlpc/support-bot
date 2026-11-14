@@ -4,25 +4,37 @@ import path from 'node:path';
 export class LogFile {
   private readonly file: string;
 
-  constructor(
-    directory: string,
-    private readonly maxBytes = 10 * 1024 * 1024,
-    private readonly copies = 4,
-  ) {
+  constructor(directory: string) {
     fs.mkdirSync(directory, { recursive: true, mode: 0o750 });
-    this.file = path.join(directory, 'app.log');
+    this.file = path.join(directory, 'latest.log');
+  }
+
+  reset(): void {
+    fs.writeFileSync(this.file, '', { mode: 0o600 });
   }
 
   append(line: string): void {
-    const size = fs.existsSync(this.file) ? fs.statSync(this.file).size : 0;
-    if (size > 0 && size + Buffer.byteLength(line) > this.maxBytes) {
-      for (let index = this.copies; index >= 1; index--) {
-        const target = this.file + '.' + index;
-        const source = index === 1 ? this.file : this.file + '.' + (index - 1);
-        if (index === this.copies) fs.rmSync(target, { force: true });
-        if (fs.existsSync(source)) fs.renameSync(source, target);
+    fs.appendFileSync(this.file, line, { mode: 0o600 });
+  }
+
+  snapshot(maxBytes: number): { data: Buffer; truncated: boolean } {
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 1)
+      throw new Error('Invalid log snapshot size');
+    const descriptor = fs.openSync(this.file, 'r');
+    try {
+      const size = fs.fstatSync(descriptor).size;
+      const start = Math.max(0, size - maxBytes);
+      const data = Buffer.alloc(Math.min(size, maxBytes));
+      const read = fs.readSync(descriptor, data, 0, data.length, start);
+      let result = data.subarray(0, read);
+      if (start > 0) {
+        const newline = result.indexOf(10);
+        if (newline >= 0 && newline < result.length - 1)
+          result = result.subarray(newline + 1);
       }
+      return { data: result, truncated: start > 0 };
+    } finally {
+      fs.closeSync(descriptor);
     }
-    fs.appendFileSync(this.file, line, { mode: 0o640 });
   }
 }

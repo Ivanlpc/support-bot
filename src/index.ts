@@ -12,6 +12,7 @@ export const client = new Bot();
 
 async function start(): Promise<void> {
   [config.TOKEN, config.KEY, config.Database.password].forEach(registerSecret);
+  Logger.initialize();
   validateConfig();
   Logger.info('Bot starting', {
     version: require('../package.json').version,

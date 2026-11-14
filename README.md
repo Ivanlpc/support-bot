@@ -12,7 +12,7 @@ Para consultar los logs:
 
 ```bash
 docker logs -f --tail 100 support-bot
-tail -f /opt/support-bot/logs/app.log
+tail -f /opt/support-bot/logs/latest.log
 ```
 
 Consulta también [la revisión actualizada](REVISION.md) y [el contrato HTTP](docs/API.md).
@@ -43,7 +43,9 @@ El bot registra comandos globales al conectarse. Los datos y las tarjetas se res
 
 Los permisos usan identificadores internos: `search`, `payments`, `perm`, `ban`, `giftcard.create`, `giftcard.delete` y `all`. Renombrar un comando visible no cambia sus permisos. La recuperación de tarjetas exige que estén vinculadas al usuario que la solicita.
 
-No subas credenciales, copias ni registros de clientes al repositorio. El lockfile sí debe versionarse. Los logs se escriben en stdout/stderr y, con LOG_DIR configurado, en logs/app.log con rotación. Docker también permite consultarlos con docker logs.
+No subas credenciales, copias ni registros de clientes al repositorio. El lockfile sí debe versionarse. El logger captura console.log, info, warn, error y debug y escribe en la terminal y en LOG_DIR/latest.log (logs/latest.log por defecto). latest.log se vacía al iniciar el bot. Las credenciales registradas y los campos sensibles se ocultan.
+
+El comando `/logs` permite a los administradores del servidor descargar latest.log mediante una respuesta ephemeral. El archivo contiene los logs de todo el bot desde el último inicio. Si supera el límite de adjuntos, se envía su parte más reciente. Docker también permite consultarlos con docker logs.
 
 ## Desarrollo y comprobaciones
 

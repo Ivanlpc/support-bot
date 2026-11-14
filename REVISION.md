@@ -12,7 +12,8 @@ El proyecto está preparado para una instalación nueva. La base de datos se cre
 - Permisos independientes para consultar pagos, gestionar permisos, crear y eliminar tarjetas y vetar usuarios.
 - Comandos perm add, remove, clear, list y search con aislamiento por servidor.
 - Menús paginados por usuario y servidor, respuestas privadas y límites de embeds.
-- Logs JSON en consola y en archivos rotados, con ocultación de credenciales.
+- Logs JSON en consola y latest.log, con ocultación de credenciales y captura de console.log. El archivo se vacía al arrancar.
+- Comando /logs exclusivo para administradores, con adjunto ephemeral limitado al tamaño permitido por Discord.
 - Imagen Docker con usuario no root y filesystem de solo lectura; código, .env externo y logs agrupados bajo /opt/support-bot en el VPS.
 - Workflow limitado a construir y ejecutar el contenedor; MySQL debe estar disponible de forma independiente.
 

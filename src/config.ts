@@ -39,6 +39,7 @@ const configSchema = z.object({
     setup: command,
     search_transaction: command,
     help: command,
+    logs: command,
     perm: command,
     giftcard: command.extend({
       subcommand: z.object({

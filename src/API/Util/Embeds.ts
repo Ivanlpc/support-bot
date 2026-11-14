@@ -77,6 +77,7 @@ export const Embeds = {
       config.Commands.perm,
       config.Commands.giftcard,
       config.Commands.payments,
+      config.Commands.logs,
       config.Commands.ban,
     ].filter((command) => command.enabled);
     return embed(

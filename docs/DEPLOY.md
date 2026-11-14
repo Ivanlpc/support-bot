@@ -9,12 +9,12 @@ El workflow tiene un único job en tu runner self-hosted: checkout, build de la 
   .env                  # Generado desde GitHub Secrets al desplegar
   current -> source/<commit>/
   source/<commit>/      # Código fuente de la versión desplegada
-  logs/app.log          # Logs persistentes y archivos rotados
+  logs/latest.log       # Logs de la ejecución actual
   data/                 # Datos opcionales que ya mantengas aquí
   backups/              # Copias opcionales
 ```
 
-La imagen contiene código y compilado bajo `/app`. **El `.env` no se incluye en la imagen**: el script lo genera con permisos 0600 y lo carga mediante `docker run --env-file /opt/support-bot/.env`. Cada despliegue actualiza este archivo desde los secretos configurados en GitHub. Los logs se montan en `/app/logs`, rotan a los 10 MB y conservan cuatro archivos anteriores. Los datos y logs permanecen al sustituir el contenedor.
+La imagen contiene código y compilado bajo `/app`. **El `.env` no se incluye en la imagen**: el script lo genera con permisos 0600 y lo carga mediante `docker run --env-file /opt/support-bot/.env`. Cada despliegue actualiza este archivo desde los secretos configurados en GitHub. Los logs se montan en `/app/logs/latest.log`. El archivo se vacía al iniciar el bot, por lo que contiene solo la ejecución actual. Los administradores pueden descargarlo en privado con `/logs`. Los demás datos permanecen al sustituir el contenedor.
 
 ## Preparar el runner una vez
 
@@ -76,7 +76,7 @@ Una compilación fallida no detiene el contenedor anterior. El paso de ejecució
 ```bash
 docker ps -a --filter name=support-bot
 docker logs -f --tail 100 support-bot
-tail -f /opt/support-bot/logs/app.log
+tail -f /opt/support-bot/logs/latest.log
 docker stop support-bot
 docker start support-bot
 ```

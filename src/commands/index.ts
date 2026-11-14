@@ -4,12 +4,13 @@ import { command as help } from './help';
 import { command as giftcard } from './giftcard';
 import { command as ban } from './ban';
 import { command as payments } from './payments';
+import { command as logs } from './logs';
 import { createCommand } from './perm';
 import { config } from '../config';
 import Command from '../structures/Command';
 
 export async function loadCommands(): Promise<Command[]> {
-  const commands = [setup, search, help, giftcard, ban, payments];
+  const commands = [setup, search, help, giftcard, ban, payments, logs];
   if (config.Commands.perm.enabled)
     commands.push((await createCommand()).command);
   return commands.filter((command) => command.getEnabled());

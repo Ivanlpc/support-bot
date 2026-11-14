@@ -1,5 +1,11 @@
-import { writeLog } from './Log';
+import { writeLog, initializeLogging, readLatestLog } from './Log';
 export default class Logger {
+  static initialize(): () => void {
+    return initializeLogging();
+  }
+  static snapshot(maxBytes: number) {
+    return readLatestLog(maxBytes);
+  }
   static debug(message: string, ...details: unknown[]): void {
     writeLog('debug', message, details);
   }

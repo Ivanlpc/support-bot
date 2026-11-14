@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { LogFile } from './LogFile';
+import path from 'node:path';
+import { format } from 'node:util';
 
 export type LogContext = Record<string, string | number>;
 export const logContext = new AsyncLocalStorage<LogContext>();
@@ -65,13 +67,60 @@ let fileSink: LogFile | undefined;
 let fileDirectory: string | undefined;
 let fileWarning = false;
 
+function getFileSink(): LogFile {
+  const directory = process.env.LOG_DIR ?? path.resolve('logs');
+  if (!fileSink || fileDirectory !== directory) {
+    fileSink = new LogFile(directory);
+    fileDirectory = directory;
+  }
+  return fileSink;
+}
+
+export function initializeLogging(): () => void {
+  getFileSink().reset();
+  fileWarning = false;
+  const originals = {
+    log: console.log,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+    debug: console.debug,
+  };
+  const levels = {
+    log: 'info',
+    info: 'info',
+    warn: 'warn',
+    error: 'error',
+    debug: 'debug',
+  } as const;
+  for (const method of Object.keys(levels) as (keyof typeof levels)[]) {
+    console[method] = (...args: unknown[]) => {
+      writeLog(
+        levels[method],
+        format(...args.map((value) => sanitize(value))),
+        [],
+        true,
+      );
+    };
+  }
+  return () => {
+    Object.assign(console, originals);
+  };
+}
+
+export function readLatestLog(maxBytes: number) {
+  return getFileSink().snapshot(maxBytes);
+}
+
 export function writeLog(
   level: Level,
   message: string,
   details: unknown[],
+  force = false,
 ): void {
   const configured = process.env.LOG_LEVEL ?? 'info';
-  if (priorities[level] < (priorities[configured as Level] ?? 20)) return;
+  if (!force && priorities[level] < (priorities[configured as Level] ?? 20))
+    return;
   const line = JSON.stringify(
     sanitize({
       time: new Date().toISOString(),
@@ -85,29 +134,22 @@ export function writeLog(
     ? process.stderr
     : process.stdout
   ).write(line + '\n');
-  const directory = process.env.LOG_DIR;
-  if (directory) {
-    try {
-      if (!fileSink || fileDirectory !== directory) {
-        fileSink = new LogFile(directory);
-        fileDirectory = directory;
-      }
-      fileSink.append(line + '\n');
-      fileWarning = false;
-    } catch (error) {
-      if (!fileWarning) {
-        process.stderr.write(
-          JSON.stringify(
-            sanitize({
-              time: new Date().toISOString(),
-              level: 'error',
-              message: 'Cannot write application log file',
-              error,
-            }),
-          ) + '\n',
-        );
-        fileWarning = true;
-      }
+  try {
+    getFileSink().append(line + '\n');
+    fileWarning = false;
+  } catch (error) {
+    if (!fileWarning) {
+      process.stderr.write(
+        JSON.stringify(
+          sanitize({
+            time: new Date().toISOString(),
+            level: 'error',
+            message: 'Cannot write application log file',
+            error,
+          }),
+        ) + '\n',
+      );
+      fileWarning = true;
     }
   }
 }

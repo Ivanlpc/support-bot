@@ -5,7 +5,7 @@ mkdir -p /tmp/fakebin /opt/support-bot/logs /opt/support-bot/data
 export PATH="/tmp/fakebin:$PATH"
 export FAKE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 export DISCORD_TOKEN=runtime-only-test-token ENCRYPTION_KEY=0123456789abcdef DB_HOST=db DB_USER=bot DB_NAME=shopy DB_PASSWORD='test=password#with spaces'
-printf 'retained-log' > /opt/support-bot/logs/app.log
+printf 'retained-log' > /opt/support-bot/logs/latest.log
 printf 'retained-data' > /opt/support-bot/data/sentinel
 cat > /tmp/fakebin/id <<'EOF'
 #!/usr/bin/env bash
@@ -39,7 +39,7 @@ bash deploy/run.sh "$FAKE_SHA"
 [[ $(cat /tmp/docker-calls) == run ]]
 [[ -f /opt/support-bot/current/src/index.ts ]]
 [[ $(stat -c %a /opt/support-bot/.env) == 600 ]]
-[[ $(cat /opt/support-bot/logs/app.log) == retained-log ]]
+[[ $(cat /opt/support-bot/logs/latest.log) == retained-log ]]
 [[ $(cat /opt/support-bot/data/sentinel) == retained-data ]]
 before=$(cksum /opt/support-bot/.env)
 if DB_HOST= bash deploy/run.sh "$FAKE_SHA"; then echo 'Missing secret accepted' >&2; exit 1; fi
