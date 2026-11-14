@@ -19,7 +19,15 @@ async function call<T extends z.ZodType>(
     response,
     await request(
       config.TEBEX_URL + path,
-      { ...requestInit, headers: headers(token) },
+      {
+        ...requestInit,
+        headers: {
+          ...headers(token),
+          ...(requestInit.body instanceof URLSearchParams
+            ? { 'Content-Type': 'application/x-www-form-urlencoded' }
+            : {}),
+        },
+      },
       undefined,
       { notFoundValue },
     ),
@@ -31,10 +39,10 @@ function giftBody(
   id: string,
   name: string,
   link?: string,
-): FormData {
+): URLSearchParams {
   if (!Number.isFinite(amount) || amount <= 0)
     throw new Error('Giftcard amount must be positive');
-  const body = new FormData();
+  const body = new URLSearchParams();
   body.append('amount', String(amount));
   body.append(
     'note',

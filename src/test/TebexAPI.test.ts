@@ -48,6 +48,28 @@ before(async () => {
         headers: req.headers,
         body: Buffer.concat(chunks).toString('utf8'),
       });
+      if (req.headers['x-tebex-secret'] === 'success-test-token') {
+        if (
+          req.headers['content-type'] !== 'application/x-www-form-urlencoded'
+        ) {
+          res.writeHead(403);
+          res.end(
+            JSON.stringify({ error_message: 'Unexpected request encoding' }),
+          );
+          return;
+        }
+        const fields = new URLSearchParams(received.at(-1)!.body);
+        const amount = fields.get('amount')!;
+        res.end(
+          JSON.stringify({
+            data: {
+              ...card(40, fields.get('note')!, false),
+              balance: { starting: amount, remaining: amount, currency: 'EUR' },
+            },
+          }),
+        );
+        return;
+      }
       res.setHeader('cf-ray', 'test-ray-id');
       res.setHeader('cf-mitigated', 'challenge');
       res.setHeader('server', 'cloudflare');
@@ -140,6 +162,28 @@ after(async () => {
 });
 
 describe('API clients over local HTTP', () => {
+  it('creates giftcards using the form encoding from the working curl, preserving notes and optional links', async () => {
+    for (const link of [undefined, 'recipient']) {
+      const result = await TebexAPI.createGiftcard(
+        'success-test-token',
+        1,
+        'creator',
+        'Iván + & = usuario',
+        link,
+      );
+      assert.ok('data' in result);
+      assert.equal(result.data.balance.starting, '1');
+      assert.equal(result.data.balance.currency, 'EUR');
+      const expectedNote =
+        (link ? 'LINKED:recipient: ' : '') +
+        'Created with Discord bot by Iván + & = usuario (creator)';
+      assert.equal(result.data.note, expectedNote);
+      assert.deepEqual(
+        Object.fromEntries(new URLSearchParams(received.at(-1)!.body)),
+        { amount: '1', note: expectedNote },
+      );
+    }
+  });
   it('sends explicit client headers and logs the actual failed request without exposing credentials', async (t) => {
     const errors = t.mock.method(Logger, 'error');
     const beforeCalls = calls.length;
@@ -158,15 +202,18 @@ describe('API clients over local HTTP', () => {
     assert.match(String(wire.headers['user-agent']), /^support-bot\/1\.2\.0/);
     assert.equal(wire.headers.accept, 'application/json');
     assert.equal(wire.headers['x-tebex-secret'], 'test-token');
-    assert.match(
-      String(wire.headers['content-type']),
-      /^multipart\/form-data; boundary=/,
+    assert.equal(
+      wire.headers['content-type'],
+      'application/x-www-form-urlencoded',
     );
-    assert.ok(
-      wire.body.includes(
-        'LINKED:recipient: Created with Discord bot by Test test-token user@example.com (creator)',
-      ),
+    assert.equal(
+      Number(wire.headers['content-length']),
+      Buffer.byteLength(wire.body),
     );
+    assert.deepEqual(Object.fromEntries(new URLSearchParams(wire.body)), {
+      amount: '25',
+      note: 'LINKED:recipient: Created with Discord bot by Test test-token user@example.com (creator)',
+    });
     const diagnostic = errors.mock.calls[0].arguments[1] as any;
     assert.deepEqual(diagnostic.request.sentHeaders, {
       ...wire.headers,
@@ -193,8 +240,9 @@ describe('API clients over local HTTP', () => {
   });
   it('keeps concurrent request diagnostics separate', async (t) => {
     const errors = t.mock.method(Logger, 'error');
+    const beforeReceived = received.length;
     await Promise.all(
-      [11, 22].map((amount) =>
+      [11, 222].map((amount) =>
         assert.rejects(
           TebexAPI.createGiftcard('test-token', amount, 'creator', 'TestUser'),
           APIError,
@@ -206,14 +254,21 @@ describe('API clients over local HTTP', () => {
     );
     assert.deepEqual(
       diagnostics.map((item) => item.request.payload.amount[0]).sort(),
-      ['11', '22'],
+      ['11', '222'],
     );
-    assert.equal(
-      new Set(
-        diagnostics.map((item) => item.request.sentHeaders['content-type']),
-      ).size,
-      2,
-    );
+    for (const diagnostic of diagnostics) {
+      const wire = received
+        .slice(beforeReceived)
+        .find(
+          (item) =>
+            new URLSearchParams(item.body).get('amount') ===
+            diagnostic.request.payload.amount[0],
+        )!;
+      assert.equal(
+        diagnostic.request.sentHeaders['content-length'],
+        wire.headers['content-length'],
+      );
+    }
   });
   it('redacts sensitive JSON fields, query parameters and authentication headers in failure diagnostics', async (t) => {
     const errors = t.mock.method(Logger, 'error');

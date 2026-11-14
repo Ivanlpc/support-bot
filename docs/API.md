@@ -22,7 +22,7 @@ Para depurar la autenticación, tras registrar una petición fallida con la cabe
 
 Las cabeceras de Tebex y las formas de pagos y tarjetas se contrastaron con su documentación de [autenticación](https://docs.tebex.io/plugin/authentication), [pagos](https://docs.tebex.io/plugin/endpoints/payments) y [tarjetas](https://docs.tebex.io/plugin/endpoints/gift-cards). Los importes de pago pueden llegar como texto y se normalizan a números; los identificadores de tarjetas y paquetes se normalizan a texto.
 
-Los identificadores de ruta y nombres de usuario se codifican. Las escrituras mantienen FormData; fetch genera su Content-Type y boundary. El cliente envía `User-Agent: support-bot/1.2.0 (+https://github.com/Ivanlpc/support-bot)` y `Accept: application/json`. Los errores de negocio recibidos con HTTP 2xx se reconocen por su esquema; los errores HTTP se propagan como excepciones.
+Los identificadores de ruta y nombres de usuario se codifican. La creación de gift cards envía `amount` y `note` con `URLSearchParams` y `Content-Type: application/x-www-form-urlencoded`, siguiendo el cURL que funciona en el VPS. Los vetos mantienen FormData; fetch genera su Content-Type y boundary. El cliente envía `User-Agent: support-bot/1.2.0 (+https://github.com/Ivanlpc/support-bot)` y `Accept: application/json`. Los errores de negocio recibidos con HTTP 2xx se reconocen por su esquema; los errores HTTP se propagan como excepciones.
 
 ## Navegación y permisos
 
