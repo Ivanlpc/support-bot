@@ -11,12 +11,7 @@ import { Shopy, connectDatabase } from './API/Database';
 export const client = new Bot();
 
 async function start(): Promise<void> {
-  [
-    config.TOKEN,
-    config.KEY,
-    config.PREVIOUS_ENCRYPTION_KEY,
-    config.Database.password,
-  ].forEach(registerSecret);
+  [config.TOKEN, config.KEY, config.Database.password].forEach(registerSecret);
   validateConfig();
   Logger.info('Bot starting', {
     version: require('../package.json').version,

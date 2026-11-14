@@ -21,12 +21,7 @@ async function execute(
   const info = await getServerInformation(interaction.guildId);
   if (!info.setup)
     return respond(interaction, {
-      content: messages.EN.setup_not_done,
-      ephemeral: true,
-    });
-  if (info.type !== 'tebex')
-    return respond(interaction, {
-      content: messages.EN.craftingstore_not_support,
+      content: messages.setup_not_done,
       ephemeral: true,
     });
   const result = await TebexAPI.recoverGiftcard(
@@ -43,12 +38,11 @@ async function execute(
     await createPager({
       userId: interaction.user.id,
       guildId: interaction.guildId,
-      kind: 'GC',
-      player: '',
+      kind: 'giftcards',
       load: arrayPages(
         result.map((card) => ({
           label:
-            'Giftcard ' +
+            'Tarjeta regalo ' +
             card.id +
             ' | ' +
             card.balance.remaining +

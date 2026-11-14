@@ -12,7 +12,6 @@ import { hasPermission } from '../../API/Services/Permissions';
 import { getServerInformation } from '../../API/Services/Guilds';
 import { createPager, arrayPages } from '../../API/Services/Pagination';
 import { TebexAPI } from '../../API/External/TebexAPI';
-import { requestPaymentByPage } from '../../API/External/CraftingstoreAPI';
 
 const data = new SlashCommandBuilder()
   .setName(config.Commands.payments.command_name)
@@ -32,72 +31,38 @@ async function execute(
     return;
   if (!(await hasPermission(interaction.member, 'payments')))
     return respond(interaction, {
-      content: messages.EN.no_permission,
+      content: messages.no_permission,
       ephemeral: true,
     });
   const info = await getServerInformation(interaction.guildId);
   if (!info.setup)
     return respond(interaction, {
-      content: messages.EN.setup_not_done,
+      content: messages.setup_not_done,
       ephemeral: true,
     });
   const player = interaction.options.getString('user', true);
   const guildId = interaction.guildId;
-  if (info.type === 'tebex') {
-    const result = await TebexAPI.getPaymentsFromUser(info.token, player);
-    if ('error_code' in result) throw new Error('Tebex payment lookup failed');
-    if (!result.payments.length)
-      return respond(interaction, {
-        content: messages[info.lang].no_payments_found,
-      });
-    return respond(
-      interaction,
-      await createPager({
-        userId: interaction.user.id,
-        guildId,
-        kind: 'TB',
-        player,
-        load: arrayPages(
-          result.payments.map((payment) => ({
-            label:
-              payment.txn_id +
-              ' | ' +
-              new Date(payment.time * 1000).toLocaleDateString(),
-            value: payment.txn_id,
-          })),
-        ),
-      }),
-    );
-  }
+  const result = await TebexAPI.getPaymentsFromUser(info.token, player);
+  if ('error_code' in result) throw new Error('Tebex payment lookup failed');
+  if (!result.payments.length)
+    return respond(interaction, {
+      content: messages.no_payments_found,
+    });
   return respond(
     interaction,
     await createPager({
       userId: interaction.user.id,
       guildId,
-      kind: 'CS',
-      player,
-      load: async (page) => {
-        const current = await getServerInformation(guildId);
-        if (!current.setup || current.type !== 'craftingstore')
-          throw new Error('Store configuration changed; run the command again');
-        const result = await requestPaymentByPage(
-          player,
-          current.token,
-          page + 1,
-        );
-        if (!result.success)
-          throw new Error('CraftingStore payment lookup failed');
-        return {
-          options: result.data.map((payment) => ({
-            label:
-              payment.packageName +
-              ' | ' +
-              new Date(payment.timestamp * 1000).toLocaleDateString(),
-            value: payment.transactionId,
-          })),
-          totalPages: result.meta.lastPage,
-        };
-      },
+      kind: 'payments',
+      load: arrayPages(
+        result.payments.map((payment) => ({
+          label:
+            payment.txn_id +
+            ' | ' +
+            new Date(payment.time * 1000).toLocaleDateString('es-ES'),
+          value: payment.txn_id,
+        })),
+      ),
     }),
   );
 }

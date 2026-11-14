@@ -1,16 +1,8 @@
 import { execute, Shopy } from '../Database';
-import { encrypt, decryptStored } from '../Util/Crypto';
+import { encrypt, decrypt } from '../Util/Crypto';
 import { Queries } from '../Queries';
 import { ResultSetHeader } from 'mysql2';
 
-/**
- * Inserts a new Guild into database
- *
- * @param guildId - Id of the discord server
- * @param name - Name of the discord server
- * @returns Boolean if the guild with `guildId` and `name` has been inserted into database
- *
- */
 export const newGuild = async (
   guildId: string | null,
   name: string | undefined,
@@ -22,13 +14,6 @@ export const newGuild = async (
   return query.affectedRows > 0;
 };
 
-/**
- * Delete a guild from database
- *
- * @param guildId - Id of the discord server
- * @returns Boolean if the guild with `guildId` has been deleted from database
- *
- */
 export const leaveGuild = async (guildId: string): Promise<boolean> => {
   const query: ResultSetHeader = await execute(Shopy, Queries.LeaveGuild, [
     guildId,
@@ -36,58 +21,19 @@ export const leaveGuild = async (guildId: string): Promise<boolean> => {
   return query.affectedRows > 0;
 };
 
-/**
- * Updates a guild with the new Craftingstore or Tebex token
- *
- * @param guildId - Id of the discord server
- * @param tkn - Craftingstore or tebex token
- * @param store = Craftingstore | Tebex
- * @returns Boolean if the guild with `guildId` has been updated in database with `tkn` and `store`
- *
- */
-
 export const updateToken = async (
   guildId: string | null,
   tkn: string,
-  store: string | null,
 ): Promise<boolean> => {
   const { token, iv } = encrypt(tkn);
   const query: ResultSetHeader = await execute(Shopy, Queries.UpdateToken, [
     token,
     iv,
-    store,
     guildId,
   ]);
   return query.affectedRows > 0;
 };
 
-/**
- * Get the token
- *
- * @param guildId - Id of the discord server
- * @param tkn - Craftingstore or tebex token
- * @param store = Craftingstore | Tebex
- * @returns Boolean if the guild with `guildId` has been updated in database with `tkn` and `store`
- *
- */
-
-export const getTokenByGuild = async (guildId: string) => {
-  const res = await execute<IToken[]>(Shopy, Queries.GetToken, [guildId]);
-
-  if (!res[0]) throw new Error('Guild setup has not been completed');
-  const token = decryptStored(res[0].token, res[0].hash);
-  return {
-    token: token,
-    type: res[0].type,
-  };
-};
-/**
- * Get the information of the server with the provided ID
- *
- * @param guildId - Id of the discord server
- * @returns IServer
- *
- */
 export const getServerInformation = async (
   guildId: string,
 ): Promise<IServer> => {
@@ -96,54 +42,22 @@ export const getServerInformation = async (
     return {
       setup: 0,
       token: '',
-      type: '',
-      lang: 'EN',
     };
 
-  const token = decryptStored(info[0].token, info[0].hash);
+  const token = decrypt(info[0].token, info[0].hash);
   return {
     setup: 1,
     token: token,
-    type: info[0].type,
-    lang: ['EN', 'ES'].includes(info[0].lang) ? info[0].lang : 'EN',
   };
-};
-/**
- * Update the language of the bot in the Database
- *
- * @param guildId - Id of the discord server
- * @param language - Language you want to set
- * @returns Boolean if the language has been updated in the database
- *
- */
-export const changeLanguage = async (
-  guildId: string,
-  language: string,
-): Promise<boolean> => {
-  const res: ResultSetHeader = await execute(Shopy, Queries.UpdateLanguage, [
-    language,
-    guildId,
-  ]);
-  if (res.affectedRows > 0) return true;
-  return false;
 };
 
 interface IGuilds {
   setup: number;
   token: string;
   hash: string;
-  type: string;
-  lang: string;
-}
-interface IToken {
-  token: string;
-  hash: string;
-  type: string;
 }
 
 interface IServer {
   setup: number;
   token: string;
-  type: string;
-  lang: string;
 }

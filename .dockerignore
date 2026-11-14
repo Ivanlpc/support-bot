@@ -6,5 +6,7 @@
 !messages.json
 !src
 !src/**
-!migrations
-!migrations/**
+**/.env
+**/.env.*
+**/config.json
+src/config.yml

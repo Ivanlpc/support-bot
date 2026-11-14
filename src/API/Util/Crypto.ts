@@ -32,52 +32,27 @@ export function decrypt(
   iv: string,
   key: string = config.KEY,
 ): string {
-  if (token.startsWith('v2:')) {
-    const parts = token.split(':');
-    if (parts.length !== 3) throw new Error('Invalid encrypted token');
-    const [, tag, ciphertext] = parts;
-    if (
-      !/^[a-f0-9]{32}$/.test(tag ?? '') ||
-      !/^[a-f0-9]{24}$/.test(iv) ||
-      !/^(?:[a-f0-9]{2})*$/.test(ciphertext ?? '')
-    ) {
-      throw new Error('Invalid encrypted token');
-    }
-    const cipher = crypto.createDecipheriv(
-      'aes-128-gcm',
-      keyBytes(key),
-      Buffer.from(iv, 'hex'),
-    );
-    cipher.setAuthTag(Buffer.from(tag, 'hex'));
-    return Buffer.concat([
-      cipher.update(Buffer.from(ciphertext, 'hex')),
-      cipher.final(),
-    ]).toString('utf8');
+  if (!token.startsWith('v2:')) throw new Error('Invalid encrypted token');
+  const parts = token.split(':');
+  if (parts.length !== 3) throw new Error('Invalid encrypted token');
+  const [, tag, ciphertext] = parts;
+  if (
+    !/^[a-f0-9]{32}$/.test(tag ?? '') ||
+    !/^[a-f0-9]{24}$/.test(iv) ||
+    !/^(?:[a-f0-9]{2})*$/.test(ciphertext ?? '')
+  ) {
+    throw new Error('Invalid encrypted token');
   }
-  // Existing database rows use the old ASCII IV and must remain readable.
-  if (iv.length !== 16 || !/^(?:[a-f0-9]{2})+$/.test(token))
-    throw new Error('Invalid legacy token');
-  const cipher = crypto.createDecipheriv('aes-128-ofb', keyBytes(key), iv);
-  return cipher.update(token, 'hex', 'utf8') + cipher.final('utf8');
-}
-
-export function decryptStored(
-  token: string,
-  iv: string,
-  currentKey = config.KEY,
-  previousKey = config.PREVIOUS_ENCRYPTION_KEY,
-): string {
-  let plaintext: string;
-  try {
-    plaintext = decrypt(
-      token,
-      iv,
-      !token.startsWith('v2:') && previousKey ? previousKey : currentKey,
-    );
-  } catch (error) {
-    if (!previousKey) throw error;
-    plaintext = decrypt(token, iv, previousKey);
-  }
+  const cipher = crypto.createDecipheriv(
+    'aes-128-gcm',
+    keyBytes(key),
+    Buffer.from(iv, 'hex'),
+  );
+  cipher.setAuthTag(Buffer.from(tag, 'hex'));
+  const plaintext = Buffer.concat([
+    cipher.update(Buffer.from(ciphertext, 'hex')),
+    cipher.final(),
+  ]).toString('utf8');
   registerSecret(plaintext);
   return plaintext;
 }

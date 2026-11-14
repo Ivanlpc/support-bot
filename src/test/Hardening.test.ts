@@ -2,11 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { sanitize, registerSecret, logContext } from '../API/Util/Log';
 import { loadConfig } from '../config';
-import {
-  parseResponse,
-  tebexPayment,
-  craftingPayments,
-} from '../API/External/Schemas';
+import { parseResponse, tebexPayment } from '../API/External/Schemas';
 import { healthy } from '../healthcheck';
 import {
   arrayPages,
@@ -62,10 +58,10 @@ describe('console logging', () => {
   });
 });
 describe('configuration and provider contracts', () => {
-  it('deep merges partial command overrides and accepts the legacy database layout', () => {
+  it('deep merges partial command and database configuration', () => {
     const config = loadConfig(
       {
-        Database: { shopy: { host: 'db' } },
+        Database: { host: 'db' },
         Commands: { giftcard: { subcommand: { create: { name: 'issue' } } } },
       },
       {},
@@ -91,13 +87,6 @@ describe('configuration and provider contracts', () => {
       (error) =>
         error instanceof Error && !error.message.includes('private-value'),
     );
-    assert.throws(() =>
-      parseResponse(
-        craftingPayments,
-        { success: true, data: [{}], meta: { currentPage: 1, lastPage: 1 } },
-        'payments',
-      ),
-    );
   });
 });
 describe('menu pagination', () => {
@@ -109,12 +98,11 @@ describe('menu pagination', () => {
     const initial = await createPager({
       userId: 'owner',
       guildId: 'guild',
-      kind: 'TB',
-      player: 'Player',
+      kind: 'payments',
       load: arrayPages(options),
     });
     const serialized = JSON.stringify(initial);
-    const id = /payments;TB;([a-f0-9-]+);0/.exec(serialized)![1];
+    const id = /payments;([a-f0-9-]+)/.exec(serialized)![1];
     try {
       assert.throws(
         () => getSession(id, 'other', 'guild'),
@@ -126,7 +114,7 @@ describe('menu pagination', () => {
       );
       const next = await renderPage(getSession(id, 'owner', 'guild'), 2);
       assert.ok(JSON.stringify(next).includes('Item 60'));
-      assert.ok(JSON.stringify(next).includes('Page 3 / 3'));
+      assert.ok(JSON.stringify(next).includes('Página 3 / 3'));
       await assert.rejects(renderPage(getSession(id, 'owner', 'guild'), 3));
     } finally {
       forgetSession(id);
@@ -147,7 +135,7 @@ describe('Discord and container boundaries', () => {
   });
   it('caps embed fields and total text while handling empty values', () => {
     const value = 'x'.repeat(10_000);
-    const result = Embeds.ban_embed(value, value, value, 'EN', value).toJSON();
+    const result = Embeds.ban_embed(value, value, value, value).toJSON();
     assert.ok((result.title?.length ?? 0) <= 256);
     assert.ok(
       result.fields?.every(
@@ -155,6 +143,13 @@ describe('Discord and container boundaries', () => {
       ),
     );
     assert.ok(JSON.stringify(result).length < 6500);
-    assert.equal(text(''), 'None');
+    assert.equal(text(''), 'Sin datos');
   });
+});
+
+it('rejects unknown database options instead of silently using defaults', () => {
+  assert.throws(
+    () => loadConfig({ Database: { unknownOption: true } }, {}),
+    /Database/,
+  );
 });

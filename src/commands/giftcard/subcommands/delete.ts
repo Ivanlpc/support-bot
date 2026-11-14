@@ -36,54 +36,34 @@ const execute = async (
     const serverInfo = await getServerInformation(interaction.guildId);
     if (serverInfo.setup === 0)
       return respond(interaction, {
-        content: messages[serverInfo.lang].setup_not_done,
+        content: messages.setup_not_done,
         ephemeral: true,
       });
-    if (serverInfo.type === 'tebex') {
-      try {
-        const request = await TebexAPI.deleteGiftcard(
-          serverInfo.token,
-          interaction.options.getString('id', true),
-        );
+    try {
+      const request = await TebexAPI.deleteGiftcard(
+        serverInfo.token,
+        interaction.options.getString('id', true),
+      );
 
-        if ('error_code' in request) {
-          return respond(interaction, {
-            content: 'TEBEX: ' + request.error_message,
-            ephemeral: true,
-          });
-        }
-        if (request.data.void) {
-          return respond(interaction, {
-            content: messages[serverInfo.lang].giftcard_deleted,
-            ephemeral: false,
-          });
-        }
-      } catch (err) {
-        Logger.error('ERROR TebexAPI deleteGiftcard promise: ', err);
-
+      if ('error_code' in request) {
         return respond(interaction, {
-          content: messages[serverInfo.lang].command_error,
+          content: 'TEBEX: ' + request.error_message,
           ephemeral: true,
         });
       }
-    } else {
+      if (request.data.void) {
+        return respond(interaction, {
+          content: messages.giftcard_deleted,
+          ephemeral: false,
+        });
+      }
+    } catch (err) {
+      Logger.error('ERROR TebexAPI deleteGiftcard promise: ', err);
+
       return respond(interaction, {
-        content: 'This command is not available in CraftingStore!',
+        content: messages.command_error,
         ephemeral: true,
       });
-
-      //CraftingStore API is not working here! This command is coded based on their API docs, but it's not working
-      // try {
-      // 	const request = await CraftingstoreAPI.deleteGiftcard(serverInfo.token, interaction.options.getString('id', true));
-      // 	if (!request.success) {
-      // 		return respond(interaction, { content: messages[serverInfo.lang].giftcard_not_found })
-      // 	} else {
-      // 		return respond(interaction, { content: messages[serverInfo.lang].giftcard_deleted, ephemeral: false });
-      // 	}
-      // } catch (err) {
-      // 	Logger.error('Operation failed', err);
-      // 	return respond(interaction, { content: messages[serverInfo.lang].command_error, ephemeral: true })
-      // }
     }
   }
 };

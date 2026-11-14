@@ -101,13 +101,15 @@ describe('/perm management', () => {
     const test = await fixture('clear');
     await test.run();
     assert.deepEqual(test.calls, [['clear', 'guild', 'target']]);
-    assert.ok(test.replies[0].content?.includes('Removed 2'));
-    assert.ok(test.replies[0].content?.includes('inherit access from roles'));
+    assert.ok(test.replies[0].content?.includes('Se han eliminado 2'));
+    assert.ok(
+      test.replies[0].content?.includes('heredando acceso de sus roles'),
+    );
   });
   it('handles clearing a target without direct assignments', async () => {
     const test = await fixture('clear', { clearPermissions: async () => 0 });
     await test.run();
-    assert.ok(test.replies[0].content?.includes('No direct permissions'));
+    assert.ok(test.replies[0].content?.includes('No hay permisos directos'));
   });
   it('lists direct grants and explains inherited access', async () => {
     const test = await fixture('list');
@@ -116,7 +118,11 @@ describe('/perm management', () => {
     assert.ok(
       test.replies[0].content?.includes('Search Transactions (search)'),
     );
-    assert.ok(test.replies[0].content?.includes('direct assignments only'));
+    assert.ok(
+      test.replies[0].content?.includes(
+        'Solo se muestran asignaciones directas',
+      ),
+    );
   });
   it('groups search results when a target has both a direct grant and all', async () => {
     const test = await fixture('search');
@@ -134,7 +140,7 @@ describe('/perm management', () => {
         })),
     });
     await test.run();
-    assert.ok(test.replies[0].content?.includes('300 entries'));
+    assert.ok(test.replies[0].content?.includes('300 resultados'));
     assert.equal(test.replies[0].files?.length, 1);
     assert.ok((test.replies[0].content?.length ?? 0) <= 2000);
   });
@@ -157,12 +163,12 @@ describe('/perm management', () => {
     const list = await fixture('list', { listPermissions: async () => [] });
     await list.run();
     assert.ok(
-      list.replies[0].content?.includes('No direct permissions assigned'),
+      list.replies[0].content?.includes('No hay permisos directos asignados'),
     );
     const search = await fixture('search', {
       searchPermission: async () => [],
     });
     await search.run();
-    assert.ok(search.replies[0].content?.includes('No users or roles'));
+    assert.ok(search.replies[0].content?.includes('Ningún usuario o rol'));
   });
 });

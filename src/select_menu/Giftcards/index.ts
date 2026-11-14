@@ -16,10 +16,9 @@ async function execute(
     interaction.user.id,
     interaction.guildId,
   );
-  if (session.kind !== 'GC') throw new Error('Invalid giftcard menu');
+  if (session.kind !== 'giftcards') throw new Error('Invalid giftcard menu');
   const info = await getServerInformation(interaction.guildId);
-  if (!info.setup || info.type !== 'tebex')
-    throw new Error('Tebex setup is missing');
+  if (!info.setup) throw new Error('Tebex setup is missing');
   const result = await TebexAPI.recoverGiftcard(
     info.token,
     interaction.user.id,
@@ -28,14 +27,15 @@ async function execute(
     return respond(interaction, { content: result.error_message });
   const card = result.find((card) => card.id === interaction.values[0]);
   if (!card)
-    return respond(interaction, { content: 'Giftcard is no longer available' });
+    return respond(interaction, {
+      content: 'La tarjeta regalo ya no está disponible',
+    });
   return respond(interaction, {
     embeds: [
       Embeds.giftcard_embed(
         card.code,
         card.balance.remaining,
         card.id,
-        info.lang,
         interaction.user.id,
         card.balance.currency,
       ),

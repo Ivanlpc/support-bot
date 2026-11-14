@@ -13,7 +13,6 @@ import {
   forgetSession,
   ExpiredSessionError,
 } from '../API/Services/Pagination';
-import { SearchLimitError } from '../API/External/CraftingstoreAPI';
 
 const event = new Event(
   'interactionCreate',
@@ -24,7 +23,7 @@ const event = new Event(
     try {
       if (!interaction.guildId) {
         await respond(interaction, {
-          content: 'Use this bot in a server.',
+          content: 'Utiliza este bot en un servidor.',
           ephemeral: true,
         });
         return;
@@ -49,7 +48,7 @@ const event = new Event(
         interaction.message.interaction?.user.id;
       if (owner !== interaction.user.id) {
         await respond(interaction, {
-          content: messages.EN.different_user,
+          content: messages.different_user,
           ephemeral: true,
         });
         return;
@@ -65,7 +64,7 @@ const event = new Event(
             !(await hasPermission(interaction.member, 'payments'))
           ) {
             await respond(interaction, {
-              content: messages.EN.no_permission,
+              content: messages.no_permission,
               ephemeral: true,
             });
             return;
@@ -81,11 +80,11 @@ const event = new Event(
           interaction.guildId,
         );
         if (
-          session.kind !== 'GC' &&
+          session.kind === 'payments' &&
           (!(interaction.member instanceof GuildMember) ||
             !(await hasPermission(interaction.member, 'payments')))
         ) {
-          await respond(interaction, { content: messages.EN.no_permission });
+          await respond(interaction, { content: messages.no_permission });
           return;
         }
         await respond(interaction, await renderPage(session, Number(page)));
@@ -104,11 +103,10 @@ const event = new Event(
       Logger.error('Interaction failed:', error);
       await respond(interaction, {
         content:
-          (error instanceof ExpiredSessionError ||
-          error instanceof SearchLimitError
+          (error instanceof ExpiredSessionError
             ? error.message
-            : messages.EN.command_error) +
-          ' (reference: ' +
+            : messages.command_error) +
+          ' (referencia: ' +
           interaction.id +
           ')',
         ephemeral: true,

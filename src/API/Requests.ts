@@ -22,7 +22,7 @@ export async function request<T>(
     method: init.method ?? 'GET',
   };
   const headers = new Headers(init.headers);
-  for (const name of ['token', 'X-Tebex-Secret', 'Authorization']) {
+  for (const name of ['X-Tebex-Secret', 'Authorization']) {
     const value = headers.get(name);
     if (value) registerSecret(value);
   }

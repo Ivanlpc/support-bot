@@ -13,8 +13,7 @@ type Session = {
   id: string;
   userId: string;
   guildId: string;
-  kind: 'TB' | 'CS' | 'GC';
-  player: string;
+  kind: 'payments' | 'giftcards';
   expires: number;
   totalPages: number;
   load: (page: number) => Promise<Page>;
@@ -23,7 +22,7 @@ const sessions = new Map<string, Session>();
 const timers = new Map<string, NodeJS.Timeout>();
 export class ExpiredSessionError extends Error {
   constructor() {
-    super('This menu has expired. Run the command again.');
+    super('Este menú ha caducado. Ejecuta el comando de nuevo.');
   }
 }
 export function forgetSession(id: string): void {
@@ -87,17 +86,17 @@ export async function renderPage(
   const controls = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId('page;' + session.id + ';' + (page - 1))
-      .setLabel('Previous')
+      .setLabel('Anterior')
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(page === 0),
     new ButtonBuilder()
       .setCustomId('page;' + session.id + ';' + (page + 1))
-      .setLabel('Next')
+      .setLabel('Siguiente')
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(page + 1 >= session.totalPages),
     new ButtonBuilder()
       .setCustomId('close;' + session.id)
-      .setLabel('Close')
+      .setLabel('Cerrar')
       .setStyle(ButtonStyle.Secondary),
   );
   const components: (
@@ -105,12 +104,12 @@ export async function renderPage(
   )[] = [];
   if (result.options.length) {
     const customId =
-      session.kind === 'GC'
+      session.kind === 'giftcards'
         ? 'giftcard;recover;' + session.id
-        : 'payments;' + session.kind + ';' + session.id + ';' + page;
+        : 'payments;' + session.id;
     const menu = new StringSelectMenuBuilder()
       .setCustomId(customId)
-      .setPlaceholder('Select an item')
+      .setPlaceholder('Selecciona un elemento')
       .addOptions(
         result.options.map((option) => ({
           label: option.label.slice(0, 100) || 'Item',
@@ -124,11 +123,11 @@ export async function renderPage(
   components.push(controls);
   return {
     content:
-      'Page ' +
+      'Página ' +
       (page + 1) +
       ' / ' +
       session.totalPages +
-      '. Menu expires in 15 minutes.',
+      '. El menú caduca en 15 minutos.',
     embeds: [],
     components,
   };

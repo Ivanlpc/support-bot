@@ -4,13 +4,11 @@ import { createServer, Server } from 'node:http';
 import { AddressInfo } from 'node:net';
 import { config } from '../config';
 import { TebexAPI } from '../API/External/TebexAPI';
-import { CraftingstoreAPI } from '../API/External/CraftingstoreAPI';
 import { request, APIError } from '../API/Requests';
 
 let server: Server;
 let base: string;
 const originalTebex = config.TEBEX_URL;
-const originalCrafting = config.CRAFTINGSTORE_URL;
 const calls: string[] = [];
 const samplePayment = {
   id: 1,
@@ -20,18 +18,6 @@ const samplePayment = {
   currency: { iso_4217: 'GBP', symbol: '£' },
   player: { name: 'Player', uuid: null },
   packages: [{ id: 13, name: 'Test package' }],
-};
-const sampleCrafting = {
-  id: 1,
-  transactionId: 'found',
-  price: '4.99',
-  packageName: 'VIP',
-  inGameName: 'Player',
-  uuid: null,
-  email: null,
-  gateway: 'test',
-  status: 'PAID',
-  timestamp: 1,
 };
 const card = (id: number, note: string, voided: boolean) => ({
   id,
@@ -81,34 +67,15 @@ before(async () => {
       );
       return;
     }
-    if (url.pathname === '/payments') {
-      assert.equal(req.headers.token, 'cs-test-token');
-      const page = Number(url.searchParams.get('page') ?? 1);
-      const player = url.searchParams.get('player');
-      if (player === 'failed') {
-        res.end(JSON.stringify({ success: false }));
-        return;
-      }
-      res.end(
-        JSON.stringify({
-          success: true,
-          data: page === 2 ? [sampleCrafting] : [],
-          meta: { currentPage: page, lastPage: player === 'empty' ? 0 : 3 },
-        }),
-      );
-      return;
-    }
     assert.equal(req.headers['x-tebex-secret'], 'test-token');
     res.end(JSON.stringify(samplePayment));
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   base = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
   config.TEBEX_URL = base;
-  config.CRAFTINGSTORE_URL = base;
 });
 after(async () => {
   config.TEBEX_URL = originalTebex;
-  config.CRAFTINGSTORE_URL = originalCrafting;
   server.closeAllConnections();
   await new Promise<void>((resolve, reject) =>
     server.close((err) => (err ? reject(err) : resolve())),
@@ -129,45 +96,6 @@ describe('API clients over local HTTP', () => {
     assert.deepEqual(
       result.map((card) => card.id),
       ['1'],
-    );
-  });
-  it('stops CraftingStore pagination immediately when found', async () => {
-    const start = calls.length;
-    assert.equal(
-      (
-        await CraftingstoreAPI.getPaymentByID(
-          'a & b',
-          'found',
-          'cs-test-token',
-          1,
-        )
-      )?.transactionId,
-      'found',
-    );
-    assert.equal(calls.length - start, 2);
-    assert.ok(calls.at(-1)?.includes('player=a%20%26%20b'));
-  });
-  it('settles empty, missing and failed searches', async () => {
-    assert.equal(
-      await CraftingstoreAPI.getPaymentByID(
-        'empty',
-        'missing',
-        'cs-test-token',
-        1,
-      ),
-      null,
-    );
-    assert.equal(
-      await CraftingstoreAPI.getPaymentByID(
-        'user',
-        'missing',
-        'cs-test-token',
-        1,
-      ),
-      null,
-    );
-    await assert.rejects(
-      CraftingstoreAPI.getPaymentByID('failed', 'missing', 'cs-test-token', 1),
     );
   });
   it('rejects HTTP errors without including response secrets', async () => {

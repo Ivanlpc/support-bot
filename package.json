@@ -1,7 +1,7 @@
 {
   "name": "support-bot",
   "version": "1.2.0",
-  "description": "Discord typescript support bot for tebex and craftingstore",
+  "description": "Discord TypeScript support bot for Tebex",
   "main": "./dist/index.js",
   "scripts": {
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
@@ -13,9 +13,6 @@
     "test:database": "node scripts/check-database.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "credentials:check": "node --env-file-if-exists=.env dist/tools/reencrypt.js",
-    "credentials:rotate": "node --env-file-if-exists=.env dist/tools/reencrypt.js --apply",
-    "db:migrate": "node --env-file-if-exists=.env dist/tools/migrate.js",
     "lint": "oxlint src scripts"
   },
   "author": "",

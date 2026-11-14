@@ -1,13 +1,11 @@
--- Fresh installation only. Existing databases: see migrations/001-modernize.sql.
+-- Initial schema. Import once into an empty database.
 CREATE TABLE guilds (
     id varchar(255) NOT NULL PRIMARY KEY,
     joined_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     setup tinyint(1) NOT NULL DEFAULT 0,
     name varchar(255) DEFAULT NULL,
     token text DEFAULT NULL,
-    type varchar(32) DEFAULT NULL,
-    hash varchar(255) DEFAULT NULL,
-    lang varchar(2) NOT NULL DEFAULT 'EN'
+    hash varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE permissions_name (

@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { LogFile } from './LogFile';
 
 export type LogContext = Record<string, string | number>;
 export const logContext = new AsyncLocalStorage<LogContext>();
@@ -60,6 +61,9 @@ const priorities: Record<Level, number> = {
   warn: 30,
   error: 40,
 };
+let fileSink: LogFile | undefined;
+let fileDirectory: string | undefined;
+let fileWarning = false;
 
 export function writeLog(
   level: Level,
@@ -81,4 +85,29 @@ export function writeLog(
     ? process.stderr
     : process.stdout
   ).write(line + '\n');
+  const directory = process.env.LOG_DIR;
+  if (directory) {
+    try {
+      if (!fileSink || fileDirectory !== directory) {
+        fileSink = new LogFile(directory);
+        fileDirectory = directory;
+      }
+      fileSink.append(line + '\n');
+      fileWarning = false;
+    } catch (error) {
+      if (!fileWarning) {
+        process.stderr.write(
+          JSON.stringify(
+            sanitize({
+              time: new Date().toISOString(),
+              level: 'error',
+              message: 'Cannot write application log file',
+              error,
+            }),
+          ) + '\n',
+        );
+        fileWarning = true;
+      }
+    }
+  }
 }

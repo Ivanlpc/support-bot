@@ -23,7 +23,7 @@ export const tebexPayment = z.object({
     uuid: z
       .string()
       .nullish()
-      .transform((value) => value ?? 'None'),
+      .transform((value) => value ?? 'Sin datos'),
   }),
   packages: z.array(z.object({ id, name: z.string() })),
   error_code: z.undefined().optional(),
@@ -71,58 +71,6 @@ export const tebexBan = z.union([
     }),
   }),
 ]);
-export const craftingPayment = z.object({
-  id: z.number().int(),
-  transactionId: z.string().min(1).max(100),
-  externalTransactionId: z
-    .string()
-    .nullish()
-    .transform((value) => value ?? ''),
-  price: money,
-  packageName: z.string(),
-  inGameName: z.string().min(1),
-  uuid: z.string().nullable(),
-  email: z
-    .string()
-    .nullish()
-    .transform((value) => value ?? ''),
-  notes: z.string().nullable().optional(),
-  gateway: z.string(),
-  status: z.string(),
-  timestamp: z.number().finite().nonnegative(),
-});
-export const craftingPayments = z.discriminatedUnion('success', [
-  z.object({
-    success: z.literal(false),
-    message: z.string().nullable().optional(),
-  }),
-  z.object({
-    success: z.literal(true),
-    message: z.string().nullable().optional(),
-    data: z.array(craftingPayment),
-    meta: z.object({
-      currentPage: z.number().int().positive(),
-      lastPage: z.number().int().nonnegative(),
-      perPage: z.number().int().nonnegative().optional(),
-    }),
-  }),
-]);
-export const craftingGiftcard = z.discriminatedUnion('success', [
-  z.object({
-    success: z.literal(false),
-    message: z.string().nullable().optional(),
-  }),
-  z.object({
-    success: z.literal(true),
-    data: z.object({
-      id,
-      code: z.string().min(1),
-      amount: moneyText,
-      amountRemaining: moneyText,
-    }),
-  }),
-]);
-
 export function parseResponse<T extends z.ZodType>(
   schema: T,
   value: unknown,

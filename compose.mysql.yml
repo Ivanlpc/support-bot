@@ -6,10 +6,14 @@ services:
   db:
     image: mysql:8.4
     env_file:
-      - /etc/support-bot/mysql.env
+      - /opt/support-bot/mysql.env
     restart: 'no'
     volumes:
-      - mysql-data:/var/lib/mysql
+      - type: bind
+        source: /opt/support-bot/data/mysql
+        target: /var/lib/mysql
+        bind:
+          create_host_path: false
       - ./discordbot.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
     healthcheck:
       test:
@@ -26,5 +30,3 @@ services:
       options:
         max-size: 10m
         max-file: '3'
-volumes:
-  mysql-data:

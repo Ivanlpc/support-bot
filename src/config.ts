@@ -24,11 +24,9 @@ const subcommand = z.object({
 const configSchema = z.object({
   TOKEN: z.string(),
   KEY: z.string(),
-  PREVIOUS_ENCRYPTION_KEY: z.string().default(''),
   TEBEX_URL: z.url(),
-  CRAFTINGSTORE_URL: z.url(),
   TRANSACTION_AVATAR_URL: z.url(),
-  Database: z.object({
+  Database: z.strictObject({
     host: z.string().min(1),
     port: z.coerce.number().int().min(1).max(65535).default(3306),
     user: z.string().min(1),
@@ -51,7 +49,6 @@ const configSchema = z.object({
     }),
     ban: command,
     payments: command,
-    lang: command,
   }),
 });
 export type Config = z.output<typeof configSchema>;
@@ -76,20 +73,11 @@ export function loadConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): Config {
   if (!record(local)) throw new Error('Configuration must be a JSON object');
-  const database =
-    record(local.Database) && record(local.Database.shopy)
-      ? local.Database.shopy
-      : local.Database;
-  const candidate = merge(defaults, {
-    ...local,
-    ...(database ? { Database: database } : {}),
-  });
+  const candidate = merge(defaults, local);
   const mappings: Record<string, string> = {
     DISCORD_TOKEN: 'TOKEN',
     ENCRYPTION_KEY: 'KEY',
-    PREVIOUS_ENCRYPTION_KEY: 'PREVIOUS_ENCRYPTION_KEY',
     TEBEX_URL: 'TEBEX_URL',
-    CRAFTINGSTORE_URL: 'CRAFTINGSTORE_URL',
   };
   for (const [variable, key] of Object.entries(mappings))
     if (env[variable] !== undefined) candidate[key] = env[variable];
@@ -121,16 +109,10 @@ export function validateConfig(): void {
     throw new Error('Set DISCORD_TOKEN or TOKEN in config.json.');
   if (Buffer.byteLength(config.KEY, 'utf8') !== 16)
     throw new Error(
-      'ENCRYPTION_KEY / KEY must contain exactly 16 UTF-8 bytes. Keep the original key for stored tokens.',
+      'ENCRYPTION_KEY / KEY must contain exactly 16 UTF-8 bytes.',
     );
-  if (
-    config.PREVIOUS_ENCRYPTION_KEY &&
-    Buffer.byteLength(config.PREVIOUS_ENCRYPTION_KEY, 'utf8') !== 16
-  )
-    throw new Error('PREVIOUS_ENCRYPTION_KEY must contain 16 UTF-8 bytes.');
-  for (const value of [config.TEBEX_URL, config.CRAFTINGSTORE_URL])
-    if (new URL(value).protocol !== 'https:')
-      throw new Error('Production API URLs must use HTTPS.');
+  if (new URL(config.TEBEX_URL).protocol !== 'https:')
+    throw new Error('Production API URLs must use HTTPS.');
   if (
     !['debug', 'info', 'warn', 'error'].includes(
       process.env.LOG_LEVEL ?? 'info',

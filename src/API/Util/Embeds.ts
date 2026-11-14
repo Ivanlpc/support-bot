@@ -1,10 +1,9 @@
 import { EmbedBuilder, ColorResolvable } from 'discord.js';
 import { IPaymentFromID } from '../External/TebexAPI';
-import { IPayment } from '../External/CraftingstoreAPI';
 import { config } from '../../config';
 import { messages } from '../../messages';
 export function text(value: unknown, limit = 1024): string {
-  const result = String(value ?? '').trim() || 'None';
+  const result = String(value ?? '').trim() || 'Sin datos';
   return result.length <= limit
     ? result
     : result.slice(0, limit - 1).replace(/[\uD800-\uDBFF]$/, '') + '…';
@@ -40,22 +39,15 @@ function embed(
     );
 }
 export const Embeds = {
-  select_store_embed: () =>
-    new EmbedBuilder()
-      .setTitle('Select your store type')
-      .setDescription(
-        'Choose the provider whose API the bot will use for this server.',
-      )
-      .setColor('#b2ffff'),
   accepting_terms_embed: () =>
     new EmbedBuilder()
-      .setTitle('Store token storage')
+      .setTitle('Almacenamiento del token de Tebex')
       .setDescription(
-        'The store token will be encrypted in the database. Removing the bot deletes the server record. Revoke the token in your store dashboard to disable API access.',
+        'El token de Tebex se guardará cifrado en la base de datos. Al expulsar al bot se eliminará el registro del servidor. Revoca el token en el panel de Tebex para desactivar el acceso a la API.',
       )
       .setColor('Green'),
-  transaction_tebex_embed: (payment: IPaymentFromID, lang = 'EN') => {
-    const m = messages[lang] ?? messages.EN;
+  transaction_tebex_embed: (payment: IPaymentFromID) => {
+    const m = messages;
     return embed(
       m.transaction + ': ' + payment.id,
       [
@@ -77,31 +69,8 @@ export const Embeds = {
       config.TRANSACTION_AVATAR_URL + encodeURIComponent(payment.player.name),
     );
   },
-  transaction_craftingstore_embed: (payment: IPayment, lang = 'EN') => {
-    const m = messages[lang] ?? messages.EN;
-    return embed(
-      m.transaction + ': ' + payment.transactionId,
-      [
-        { name: m.player, value: payment.inGameName },
-        { name: m.uuid, value: payment.uuid },
-        { name: m.email, value: payment.email },
-        { name: m.packages, value: payment.packageName },
-        { name: m.price, value: payment.price },
-        { name: m.gateway, value: payment.gateway },
-        { name: m.status, value: payment.status },
-        {
-          name: m.date,
-          value: new Date(payment.timestamp * 1000).toLocaleDateString(),
-        },
-      ],
-      'CraftingStore API',
-      ['PAID', 'COMPLETE'].includes(payment.status) ? 'Green' : 'Red',
-    ).setThumbnail(
-      config.TRANSACTION_AVATAR_URL + encodeURIComponent(payment.inGameName),
-    );
-  },
-  help_embed: (lang = 'EN') => {
-    const m = messages[lang] ?? messages.EN;
+  help_embed: () => {
+    const m = messages;
     const entries = [
       config.Commands.setup,
       config.Commands.search_transaction,
@@ -109,7 +78,6 @@ export const Embeds = {
       config.Commands.giftcard,
       config.Commands.payments,
       config.Commands.ban,
-      config.Commands.lang,
     ].filter((command) => command.enabled);
     return embed(
       m.showing_help,
@@ -125,11 +93,10 @@ export const Embeds = {
     code: string,
     amount: string,
     id: string,
-    lang = 'EN',
     user?: string,
     currency?: string,
   ) => {
-    const m = messages[lang] ?? messages.EN;
+    const m = messages;
     return embed(
       m.giftcard_created + ': ' + id,
       [
@@ -140,14 +107,8 @@ export const Embeds = {
       'Green',
     );
   },
-  ban_embed: (
-    user: string,
-    reason: string,
-    id: string,
-    lang = 'EN',
-    ip?: string,
-  ) => {
-    const m = messages[lang] ?? messages.EN;
+  ban_embed: (user: string, reason: string, id: string, ip?: string) => {
+    const m = messages;
     return embed(
       m.ban_created + ': ' + id,
       [

@@ -2,7 +2,15 @@ services:
   bot:
     image: ${SUPPORT_BOT_IMAGE:?Set SUPPORT_BOT_IMAGE to a tested image tag}
     env_file:
-      - /etc/support-bot/runtime.env
+      - /opt/support-bot/.env
+    environment:
+      LOG_DIR: /app/logs
+    volumes:
+      - type: bind
+        source: /opt/support-bot/logs
+        target: /app/logs
+        bind:
+          create_host_path: false
     init: true
     restart: 'no'
     read_only: true

@@ -21,20 +21,22 @@ import { TebexAPI } from '../../API/External/TebexAPI';
 import { config } from '../../config';
 import { messages } from '../../messages';
 
-const modal = new ModalBuilder().setCustomId('reason').setTitle('Ban Form');
+const modal = new ModalBuilder()
+  .setCustomId('reason')
+  .setTitle('Bloquear jugador');
 const reason = new TextInputBuilder()
   .setCustomId('inputReason')
-  .setLabel('Write your reason here')
+  .setLabel('Motivo del bloqueo')
   .setRequired(true)
   .setStyle(TextInputStyle.Paragraph);
 const username = new TextInputBuilder()
   .setCustomId('inputUsername')
-  .setLabel('Username:')
+  .setLabel('Nombre del jugador:')
   .setRequired(true)
   .setStyle(TextInputStyle.Short);
 const ip = new TextInputBuilder()
   .setCustomId('inputIP')
-  .setLabel('IP Address')
+  .setLabel('Dirección IP')
   .setRequired(false)
   .setStyle(TextInputStyle.Short);
 const ActionRow1 =
@@ -81,13 +83,9 @@ async function execute(
   try {
     const info = await getServerInformation(interaction.guildId);
     if (!info.setup)
-      return respond(submission, { content: messages.EN.setup_not_done });
+      return respond(submission, { content: messages.setup_not_done });
     if (!(await hasPermission(interaction.member, 'ban')))
-      return respond(submission, { content: messages.EN.no_permission });
-    if (info.type !== 'tebex')
-      return respond(submission, {
-        content: messages.EN.craftingstore_not_support,
-      });
+      return respond(submission, { content: messages.no_permission });
     const ip = submission.fields.getTextInputValue('inputIP');
     const result = await TebexAPI.createBan(
       info.token,
@@ -103,18 +101,16 @@ async function execute(
             result.data.user.ign,
             result.data.reason,
             result.data.id,
-            info.lang,
             ip,
           ),
         ],
       });
     }
-    return respond(submission, { content: messages.EN.command_error });
+    return respond(submission, { content: messages.command_error });
   } catch (error) {
     Logger.error('Store ban failed', error);
     return respond(submission, {
-      content:
-        messages.EN.command_error + ' (reference: ' + interaction.id + ')',
+      content: messages.command_error + ' (referencia: ' + interaction.id + ')',
     });
   }
 }

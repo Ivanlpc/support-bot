@@ -9,9 +9,6 @@ module.exports = async function checkPermissions(connection, env) {
   await connection.query(
     "INSERT INTO guilds (id,name) VALUES ('permissions-main','Main'),('permissions-other','Other')",
   );
-  const [legacy] = await connection.query(
-    "INSERT INTO permissions_name (name,command) VALUES ('Inactive test permission','legacy.test')",
-  );
   try {
     await connection.query(
       'INSERT INTO permissions (guildId,id,permission_node) VALUES ?',
@@ -20,7 +17,6 @@ module.exports = async function checkPermissions(connection, env) {
           ['permissions-main', 'shared', node.search],
           ['permissions-main', 'shared', node.payments],
           ['permissions-main', 'shared', node.all],
-          ['permissions-main', 'shared', legacy.insertId],
           ['permissions-main', 'role', node.search],
           ['permissions-main', 'all-holder', node.all],
           ['permissions-other', 'shared', node.search],
@@ -38,7 +34,7 @@ module.exports = async function checkPermissions(connection, env) {
           const matches=await service.searchPermission('permissions-main',${Number(node.search)});
           assert.equal(matches.length,4);
           assert.ok(matches.some(row=>row.id==='all-holder'&&row.command==='all'));
-          assert.equal(await service.clearPermissions('permissions-main','shared'),4);
+          assert.equal(await service.clearPermissions('permissions-main','shared'),3);
           assert.equal(await service.clearPermissions('permissions-main','shared'),0);
           assert.deepEqual(await service.listPermissions('permissions-main','shared'),[]);
           assert.equal((await service.listPermissions('permissions-other','shared')).length,1);
@@ -71,8 +67,5 @@ module.exports = async function checkPermissions(connection, env) {
     await connection.query(
       "DELETE FROM guilds WHERE id IN ('permissions-main','permissions-other')",
     );
-    await connection.query('DELETE FROM permissions_name WHERE value = ?', [
-      legacy.insertId,
-    ]);
   }
 };

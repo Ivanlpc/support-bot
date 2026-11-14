@@ -12,20 +12,15 @@ Los logs incluyen proveedor, recurso, método, estado y duración. No incluyen l
 
 ## Integraciones
 
-| Proveedor     | Base                             | Autenticación  | Operaciones                            |
-| ------------- | -------------------------------- | -------------- | -------------------------------------- |
-| Tebex         | https://plugin.tebex.io          | X-Tebex-Secret | Pagos, usuarios, tarjetas y vetos      |
-| CraftingStore | https://api.craftingstore.net/v7 | token          | Pagos paginados y creación de tarjetas |
+| Proveedor | Base                    | Autenticación  | Operaciones                       |
+| --------- | ----------------------- | -------------- | --------------------------------- |
+| Tebex     | https://plugin.tebex.io | X-Tebex-Secret | Pagos, usuarios, tarjetas y vetos |
 
 Las cabeceras de Tebex y las formas de pagos y tarjetas se contrastaron con su documentación de [autenticación](https://docs.tebex.io/plugin/authentication), [pagos](https://docs.tebex.io/plugin/endpoints/payments) y [tarjetas](https://docs.tebex.io/plugin/endpoints/gift-cards). Los importes de pago pueden llegar como texto y se normalizan a números; los identificadores de tarjetas y paquetes se normalizan a texto.
-
-Los contratos de CraftingStore parten del cliente heredado: su [documentación oficial](https://docs.api.craftingstore.net/) presenta un control de acceso que impidió leerla en esta sesión. Sus respuestas siguen necesitando aceptación contra una tienda real. La eliminación de tarjetas continúa deshabilitada.
 
 Los identificadores de ruta y nombres de usuario se codifican. Las escrituras mantienen FormData. Los errores de negocio recibidos con HTTP 2xx se reconocen por su esquema; los errores HTTP se propagan como excepciones.
 
 ## Navegación y permisos
-
-CraftingStore permite pedir una página concreta para los menús. Seleccionar un pago consulta la página desde la que se mostró. La búsqueda directa recorre como máximo 100 páginas, devuelve null al llegar al final y comunica un error específico al alcanzar el límite.
 
 Tebex devuelve solo tarjetas activas con una nota que comienza por LINKED seguida del ID de Discord correspondiente. La selección vuelve a consultar el proveedor y comprueba la vinculación antes de revelar el código.
 

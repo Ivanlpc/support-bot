@@ -43,7 +43,7 @@ async function execute(
       (await hasPermission(interaction.member, 'giftcard.' + action));
     if (!allowed) {
       return respond(interaction, {
-        content: messages.EN.no_permission,
+        content: messages.no_permission,
         ephemeral: true,
       });
     }
@@ -54,7 +54,7 @@ async function execute(
         Logger.error('Giftcard creation failed', err);
 
         return respond(interaction, {
-          content: messages.EN.command_error,
+          content: messages.command_error,
           ephemeral: true,
         });
       }
@@ -65,7 +65,7 @@ async function execute(
         Logger.error('Giftcard deletion failed', err);
 
         return respond(interaction, {
-          content: messages.EN.command_error,
+          content: messages.command_error,
           ephemeral: true,
         });
       }
@@ -75,7 +75,7 @@ async function execute(
       } catch (err) {
         Logger.error('Giftcard recovery failed', err);
         return respond(interaction, {
-          content: messages.EN.command_error,
+          content: messages.command_error,
           ephemeral: true,
         });
       }

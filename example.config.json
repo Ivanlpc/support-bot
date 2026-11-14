@@ -2,9 +2,7 @@
   "TOKEN": "",
   "KEY": "",
   "TEBEX_URL": "https://plugin.tebex.io",
-  "CRAFTINGSTORE_URL": "https://api.craftingstore.net/v7",
   "TRANSACTION_AVATAR_URL": "https://mc-heads.net/avatar/",
-
   "Database": {
     "host": "localhost",
     "user": "bot",
@@ -16,63 +14,57 @@
     "setup": {
       "enabled": true,
       "command_name": "setup",
-      "command_description": "Setup your server to use TebexAPI or CraftingStoreAPI"
+      "command_description": "Configura el token de Tebex para tu servidor"
     },
     "search_transaction": {
       "enabled": true,
       "command_name": "search",
-      "command_description": "Search a payment by the transaction ID",
-      "command_requirements_id": "ID of the payment you want to search",
-      "command_requirements_user": "Username of the payment with that ID"
+      "command_description": "Busca un pago por su ID de transacción",
+      "command_requirements_id": "ID de la transacción que quieres buscar"
     },
     "help": {
       "enabled": true,
       "command_name": "help",
-      "command_description": "Shows the commands for this bot"
+      "command_description": "Muestra los comandos del bot"
     },
     "perm": {
       "enabled": true,
       "command_name": "perm",
-      "command_description": "Set permisisons to use the commands"
+      "command_description": "Administra los permisos de los comandos"
     },
     "giftcard": {
       "enabled": true,
       "command_name": "giftcard",
-      "command_description": "Manage giftcards of your server",
+      "command_description": "Administra las tarjetas regalo de tu servidor",
       "subcommand": {
         "create": {
           "name": "create",
-          "description": "Create a Giftcard with the provided amount",
-          "requirement_amount": "Amount of the Giftcard you want to create",
-          "non_required_user": "TEBEX ONLY. Link the giftcard to that user, so they can use /giftcard recover"
+          "description": "Crea una tarjeta regalo con la cantidad indicada",
+          "requirement_amount": "Importe de la tarjeta regalo",
+          "non_required_user": "Vincula la tarjeta al usuario para que pueda recuperarla con /giftcard recover"
         },
         "delete": {
           "name": "delete",
-          "description": "Delete a Giftcard with the provided ID",
-          "requirement_id": "ID of the giftcard you want to delete"
+          "description": "Elimina una tarjeta regalo por su ID",
+          "requirement_id": "ID de la tarjeta regalo que quieres eliminar"
         },
         "recover": {
           "name": "recover",
-          "description": "TEBEX ONLY. Recover a giftcard linked to your discord ID that has been created by this bot"
+          "description": "Recupera una tarjeta creada por el bot y vinculada a tu cuenta de Discord"
         }
       }
     },
     "ban": {
       "enabled": true,
       "command_name": "ban",
-      "command_description": "Bans a player in your Tebex store.",
-      "command_requirements_user": "Username of the player"
+      "command_description": "Impide que un jugador compre en tu tienda de Tebex",
+      "command_requirements_user": "Nombre del jugador"
     },
     "payments": {
       "enabled": true,
       "command_name": "payments",
-      "command_description": "Return all payments of the given username",
-      "command_requirements_user": "Username of the player"
-    },
-    "lang": {
-      "enabled": false,
-      "command_name": "lang",
-      "command_description": "Switch the language of the bot messages"
+      "command_description": "Muestra los pagos del usuario indicado",
+      "command_requirements_user": "Nombre del jugador"
     }
   }
 }

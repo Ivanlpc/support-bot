@@ -25,9 +25,9 @@ function report(
       title +
       '\n' +
       note +
-      '\nFull results attached (' +
+      '\nResultados completos adjuntos (' +
       lines.length +
-      ' entries).',
+      ' resultados).',
     files: [
       new AttachmentBuilder(Buffer.from(content, 'utf8'), {
         name: 'permissions.txt',
@@ -48,18 +48,21 @@ export async function createCommand(service = permissions) {
         .setName(action)
         .setDescription(
           action === 'add'
-            ? 'Add permission to a user / role'
-            : 'Remove permission from a user / role',
+            ? 'Añade un permiso a un usuario o rol'
+            : 'Retira un permiso a un usuario o rol',
         )
         .addIntegerOption((option) =>
           option
             .setName('perm')
-            .setDescription('Permission')
+            .setDescription('Permiso')
             .addChoices(...choices)
             .setRequired(true),
         )
         .addMentionableOption((option) =>
-          option.setName('id').setDescription('User / role').setRequired(true),
+          option
+            .setName('id')
+            .setDescription('Usuario o rol')
+            .setRequired(true),
         ),
     );
   }
@@ -69,11 +72,14 @@ export async function createCommand(service = permissions) {
         .setName(action)
         .setDescription(
           action === 'clear'
-            ? 'Remove all direct permission assignments from a user / role'
-            : 'List direct permission assignments for a user / role',
+            ? 'Elimina todos los permisos directos de un usuario o rol'
+            : 'Lista los permisos directos de un usuario o rol',
         )
         .addMentionableOption((option) =>
-          option.setName('id').setDescription('User / role').setRequired(true),
+          option
+            .setName('id')
+            .setDescription('Usuario o rol')
+            .setRequired(true),
         ),
     );
   }
@@ -81,12 +87,12 @@ export async function createCommand(service = permissions) {
     subcommand
       .setName('search')
       .setDescription(
-        'Find users / roles granted a permission, including all permissions',
+        'Busca usuarios o roles con un permiso, incluido el permiso total',
       )
       .addIntegerOption((option) =>
         option
           .setName('perm')
-          .setDescription('Permission to find')
+          .setDescription('Permiso que quieres buscar')
           .addChoices(...choices)
           .setRequired(true),
       ),
@@ -102,7 +108,7 @@ export async function createCommand(service = permissions) {
     try {
       if (!(await service.hasPermission(interaction.member, 'perm')))
         return respond(interaction, {
-          content: messages.EN.no_permission,
+          content: messages.no_permission,
           ephemeral: true,
         });
       if (action === 'search') {
@@ -110,7 +116,7 @@ export async function createCommand(service = permissions) {
         const selected = choices.find((choice) => choice.value === permission);
         if (!selected)
           return respond(interaction, {
-            content: 'Unknown permission. Run the command again.',
+            content: 'Permiso desconocido. Ejecuta el comando de nuevo.',
             ephemeral: true,
           });
         const holders = await service.searchPermission(
@@ -130,11 +136,11 @@ export async function createCommand(service = permissions) {
         return respond(
           interaction,
           report(
-            'Permission: ' + selected.name,
+            'Permiso: ' + selected.name,
             lines.length
               ? lines
-              : ['No users or roles have this permission assigned.'],
-            'IDs refer to users or roles. Includes assignments through all; the server owner also has implicit access.',
+              : ['Ningún usuario o rol tiene asignado este permiso.'],
+            'Los IDs corresponden a usuarios o roles. Incluye asignaciones mediante all; el propietario del servidor también tiene acceso implícito.',
           ),
         );
       }
@@ -148,14 +154,14 @@ export async function createCommand(service = permissions) {
         return respond(
           interaction,
           report(
-            'Direct permissions for ' + id,
+            'Permisos directos de ' + id,
             assignments.length
               ? assignments.map(
                   (assignment) =>
                     assignment.name + ' (' + assignment.command + ')',
                 )
-              : ['No direct permissions assigned.'],
-            'This lists direct assignments only. Users may also inherit access from roles; the server owner always has access.',
+              : ['No hay permisos directos asignados.'],
+            'Solo se muestran asignaciones directas. Los usuarios también pueden heredar acceso de sus roles; el propietario siempre tiene acceso.',
           ),
         );
       }
@@ -164,13 +170,13 @@ export async function createCommand(service = permissions) {
         return respond(interaction, {
           content:
             (removed
-              ? 'Removed ' +
+              ? 'Se han eliminado ' +
                 removed +
-                ' direct permission assignment(s) from ' +
+                ' asignaciones directas de permisos de ' +
                 id +
                 '.'
-              : 'No direct permissions to remove from ' + id + '.') +
-            ' Other assignments are unchanged. Users may still inherit access from roles; the server owner always has access.',
+              : 'No hay permisos directos que eliminar de ' + id + '.') +
+            ' Los usuarios pueden seguir heredando acceso de sus roles; el propietario siempre tiene acceso.',
           ephemeral: true,
         });
       }
@@ -183,8 +189,8 @@ export async function createCommand(service = permissions) {
         );
         return respond(interaction, {
           content: added
-            ? 'Permission added!'
-            : 'That user/role already has that permission',
+            ? 'Permiso añadido.'
+            : 'Ese usuario o rol ya tiene ese permiso',
           ephemeral: true,
         });
       }
@@ -196,8 +202,8 @@ export async function createCommand(service = permissions) {
         );
         return respond(interaction, {
           content: removed
-            ? 'Permission removed!'
-            : 'That user/role does not have that direct permission',
+            ? 'Permiso retirado.'
+            : 'Ese usuario o rol no tiene ese permiso directo',
           ephemeral: true,
         });
       }
@@ -210,7 +216,7 @@ export async function createCommand(service = permissions) {
       );
       return respond(interaction, {
         content:
-          messages.EN.database_error + ' (reference: ' + interaction.id + ')',
+          messages.database_error + ' (referencia: ' + interaction.id + ')',
         ephemeral: true,
       });
     }
