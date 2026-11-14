@@ -1,5 +1,6 @@
 import Logger from './Util/Logger';
 import { registerSecret, sanitize } from './Util/Log';
+import { httpTrace, HTTPTrace, payloadSummary } from './Util/HTTPDiagnostics';
 
 export class APIError extends Error {
   public readonly responseBody: unknown;
@@ -67,8 +68,12 @@ export async function request<T>(
   const signal = init.signal
     ? AbortSignal.any([init.signal, timeout])
     : timeout;
+  const trace: HTTPTrace = {};
+  let response: Response | undefined;
   try {
-    const response = await fetch(input, { ...init, signal, redirect: 'error' });
+    response = await httpTrace.run(trace, () =>
+      fetch(input, { ...init, headers, signal, redirect: 'error' }),
+    );
     if (response.status === 404 && options.notFoundValue !== undefined) {
       await response.body?.cancel();
       Logger.info('API resource not found', {
@@ -113,7 +118,35 @@ export async function request<T>(
   } catch (error) {
     Logger.error(
       'API request failed',
-      { ...context, durationMs: Math.round(performance.now() - started) },
+      sanitize({
+        ...context,
+        durationMs: Math.round(performance.now() - started),
+        request: {
+          url: url.origin + url.pathname,
+          query: Object.fromEntries(url.searchParams),
+          configuredHeaders: Object.fromEntries(headers),
+          payload: payloadSummary(init.body, headers),
+          ...trace,
+        },
+        response: response && {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(
+            [
+              'server',
+              'content-type',
+              'content-length',
+              'cf-ray',
+              'cf-mitigated',
+              'retry-after',
+            ].flatMap((name) => {
+              const value = response!.headers.get(name);
+              return value === null ? [] : [[name, value]];
+            }),
+          ),
+        },
+        runtime: { node: process.version, undici: process.versions.undici },
+      }),
       error,
     );
     throw error;

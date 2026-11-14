@@ -1,6 +1,6 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createServer, Server } from 'node:http';
+import { createServer, Server, IncomingHttpHeaders } from 'node:http';
 import { AddressInfo } from 'node:net';
 import { config } from '../config';
 import { TebexAPI } from '../API/External/TebexAPI';
@@ -19,6 +19,7 @@ let server: Server;
 let base: string;
 const originalTebex = config.TEBEX_URL;
 const calls: string[] = [];
+const received: { headers: IncomingHttpHeaders; body: string }[] = [];
 const samplePayment = {
   id: 1,
   amount: '4.99',
@@ -36,11 +37,21 @@ const card = (id: number, note: string, voided: boolean) => ({
   balance: { starting: '10.00', remaining: '5.00', currency: 'GBP' },
 });
 before(async () => {
-  server = createServer((req, res) => {
+  server = createServer(async (req, res) => {
     const url = new URL(req.url!, 'http://localhost');
     calls.push(req.url!);
     res.setHeader('Content-Type', 'application/json');
     if (url.pathname === '/gift-cards' && req.method === 'POST') {
+      const chunks: Buffer[] = [];
+      for await (const chunk of req) chunks.push(chunk);
+      received.push({
+        headers: req.headers,
+        body: Buffer.concat(chunks).toString('utf8'),
+      });
+      res.setHeader('cf-ray', 'test-ray-id');
+      res.setHeader('cf-mitigated', 'challenge');
+      res.setHeader('server', 'cloudflare');
+      res.setHeader('set-cookie', 'private-cookie=must-not-be-logged');
       res.writeHead(403);
       res.end(
         JSON.stringify({
@@ -129,6 +140,134 @@ after(async () => {
 });
 
 describe('API clients over local HTTP', () => {
+  it('sends explicit client headers and logs the actual failed request without exposing credentials', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    const beforeCalls = calls.length;
+    await assert.rejects(
+      TebexAPI.createGiftcard(
+        'test-token',
+        25,
+        'creator',
+        'Test test-token user@example.com',
+        'recipient',
+      ),
+      APIError,
+    );
+    assert.equal(calls.length, beforeCalls + 1);
+    const wire = received.at(-1)!;
+    assert.match(String(wire.headers['user-agent']), /^support-bot\/1\.2\.0/);
+    assert.equal(wire.headers.accept, 'application/json');
+    assert.equal(wire.headers['x-tebex-secret'], 'test-token');
+    assert.match(
+      String(wire.headers['content-type']),
+      /^multipart\/form-data; boundary=/,
+    );
+    assert.ok(
+      wire.body.includes(
+        'LINKED:recipient: Created with Discord bot by Test test-token user@example.com (creator)',
+      ),
+    );
+    const diagnostic = errors.mock.calls[0].arguments[1] as any;
+    assert.deepEqual(diagnostic.request.sentHeaders, {
+      ...wire.headers,
+      'x-tebex-secret': '[REDACTED]',
+    });
+    assert.deepEqual(diagnostic.request.payload, {
+      amount: ['25'],
+      note: [
+        'LINKED:recipient: Created with Discord bot by Test [REDACTED] [EMAIL] (creator)',
+      ],
+    });
+    assert.equal(diagnostic.request.connection.remoteFamily, 'IPv4');
+    assert.equal(diagnostic.response.status, 403);
+    assert.equal(diagnostic.response.headers['cf-ray'], 'test-ray-id');
+    assert.equal(diagnostic.response.headers['cf-mitigated'], 'challenge');
+    assert.ok(diagnostic.runtime.node);
+    const output = JSON.stringify(diagnostic);
+    for (const secret of [
+      'test-token',
+      'user@example.com',
+      'must-not-be-logged',
+    ])
+      assert.ok(!output.includes(secret));
+  });
+  it('keeps concurrent request diagnostics separate', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    await Promise.all(
+      [11, 22].map((amount) =>
+        assert.rejects(
+          TebexAPI.createGiftcard('test-token', amount, 'creator', 'TestUser'),
+          APIError,
+        ),
+      ),
+    );
+    const diagnostics = errors.mock.calls.map(
+      (call) => call.arguments[1] as any,
+    );
+    assert.deepEqual(
+      diagnostics.map((item) => item.request.payload.amount[0]).sort(),
+      ['11', '22'],
+    );
+    assert.equal(
+      new Set(
+        diagnostics.map((item) => item.request.sentHeaders['content-type']),
+      ).size,
+      2,
+    );
+  });
+  it('redacts sensitive JSON fields, query parameters and authentication headers in failure diagnostics', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    await assert.rejects(
+      request(base + '/error-text?token=private-query-token&limit=5', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer private-auth-token',
+          Cookie: 'private-cookie',
+        },
+        body: JSON.stringify({
+          amount: 12,
+          note: 'test note',
+          password: 'private-payload-password',
+          nested: { secret: 'private-nested-secret' },
+        }),
+      }),
+      APIError,
+    );
+    const diagnostic = errors.mock.calls[0].arguments[1] as any;
+    assert.equal(diagnostic.request.query.token, '[REDACTED]');
+    assert.equal(diagnostic.request.query.limit, '5');
+    assert.equal(diagnostic.request.payload.amount, 12);
+    assert.equal(diagnostic.request.payload.note, 'test note');
+    assert.equal(diagnostic.request.payload.password, '[REDACTED]');
+    assert.equal(diagnostic.request.sentHeaders.authorization, '[REDACTED]');
+    assert.equal(diagnostic.request.sentHeaders.cookie, '[REDACTED]');
+    assert.ok(!JSON.stringify(diagnostic).includes('private-'));
+  });
+  it('keeps duplicate form fields in diagnostics without changing the HTTP failure', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    const body = new FormData();
+    body.append('note', 'first');
+    body.append('note', 'second');
+    body.append('__proto__', 'value');
+    await assert.rejects(
+      request(base + '/error-text', { method: 'POST', body }),
+      APIError,
+    );
+    const diagnostic = errors.mock.calls[0].arguments[1] as any;
+    assert.deepEqual(diagnostic.request.payload.note, ['first', 'second']);
+    assert.deepEqual(diagnostic.request.payload.__proto__, ['value']);
+  });
+  it('does not emit detailed request diagnostics on success', async (t) => {
+    const errors = t.mock.method(Logger, 'error');
+    const infos = t.mock.method(Logger, 'info');
+    await TebexAPI.getPaymentFromId('test-token', 'success');
+    assert.equal(errors.mock.callCount(), 0);
+    assert.equal(infos.mock.callCount(), 1);
+    assert.ok(
+      !JSON.stringify(infos.mock.calls[0].arguments).includes('request"'),
+    );
+  });
   it('preserves the sanitized Tebex error body on a failed giftcard creation', async () => {
     await assert.rejects(
       TebexAPI.createGiftcard('test-token', 25, 'creator', 'TestUser'),

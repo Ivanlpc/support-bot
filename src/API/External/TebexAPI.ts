@@ -3,7 +3,11 @@ import { request } from '../Requests';
 import { config } from '../../config';
 import * as schema from './Schemas';
 
-const headers = (token: string) => ({ 'X-Tebex-Secret': token });
+const headers = (token: string) => ({
+  'X-Tebex-Secret': token,
+  'User-Agent': 'support-bot/1.2.0 (+https://github.com/Ivanlpc/support-bot)',
+  Accept: 'application/json',
+});
 async function call<T extends z.ZodType>(
   token: string,
   path: string,
