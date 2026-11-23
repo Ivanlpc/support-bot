@@ -70,7 +70,7 @@ const execute = async (
           ephemeral: false,
           embeds: [
             Embeds.giftcard_embed(
-              request.data.code,
+              '```\n' + request.data.code + '\n```',
               request.data.balance.starting,
               request.data.id.toString(),
               interaction.options.getUser('user', false)?.id,
