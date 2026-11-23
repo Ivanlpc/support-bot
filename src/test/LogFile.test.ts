@@ -124,7 +124,7 @@ it('prints API failures with readable context, body and stack while keeping JSON
   }
 });
 
-it('prints failed request payloads and the exact Tebex header in the terminal and file', async (t) => {
+it('logs failed request diagnostics without credentials in the terminal or downloadable file', async (t) => {
   const temporary = temporaryDirectory();
   const previousDirectory = process.env.LOG_DIR;
   const previousLevel = process.env.LOG_LEVEL;
@@ -159,9 +159,11 @@ it('prints failed request payloads and the exact Tebex header in the terminal an
     assert.match(terminal, /payload:/);
     assert.match(terminal, /amount: \[ '25' \]/);
     assert.match(terminal, /LINKED:42: Created with Discord bot/);
-    assert.match(terminal, /'X-Tebex-Secret': 'exact-tebex-debug-key'/);
-    const records = Logger.snapshot(20000)
-      .data.toString('utf8')
+    assert.ok(!terminal.includes('exact-tebex-debug-key'));
+    assert.match(terminal, /'x-tebex-secret': '\[REDACTED\]'/);
+    const contents = Logger.snapshot(20000).data.toString('utf8');
+    assert.ok(!contents.includes('exact-tebex-debug-key'));
+    const records = contents
       .trim()
       .split('\n')
       .map((line) => JSON.parse(line));
@@ -173,10 +175,7 @@ it('prints failed request payloads and the exact Tebex header in the terminal an
       records[0].details[0].request.sentHeaders['x-tebex-secret'],
       '[REDACTED]',
     );
-    assert.equal(
-      records[1].details[0]['X-Tebex-Secret'],
-      'exact-tebex-debug-key',
-    );
+    assert.equal(records.length, 1);
     Logger.error('Other secrets stay hidden', {
       token: 'exact-tebex-debug-key',
       password: 'hidden-password',
